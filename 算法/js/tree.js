@@ -60,19 +60,6 @@ BST.prototype.inOrderRecursion = function(node){
 	}
 }
 
-//中序遍历 非递归
-BST.prototype.inOrder = function(node){
-
-	var leftArr = [];
-
-	var left = node.left;
-	var right = node.right;
-
-	while(!left == null){
-		leftArr.push(left.data);
-	}
-
-}
 
 //先序遍历 递归
 BST.prototype.preOrderRecursion = function(node){	
@@ -197,6 +184,7 @@ nums.insert(60);
 nums.insert(100);
 
 nums.inOrderRecursion(nums.root);
+console.log(nums)
 console.log('递归实现：' + nums.arr.toString());
 
 
