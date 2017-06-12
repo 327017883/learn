@@ -105,15 +105,13 @@ function dKnapsack(capacity, size, value, n) {
 			else {
 				K[i][w] = K[i - 1][w];
 			}
-			//putstr(K[i][w] + " ");
 		}
-		//print();
 	}
 	
 	return K[n][capacity];
 }
-var value = [4, 5, 10, 11, 13];
-var size = [3, 4, 7, 8, 9];
+var value = [4, 5, 20, 11, 13];
+var size = [3, 4, 10, 8, 9];
 var capacity = 16;
 var n = 5;
-dKnapsack(capacity, size, value, n);
+var v = dKnapsack(capacity, size, value, n);
