@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>hello</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta content="black" name="apple-mobile-web-app-status-bar-style">
+	<meta content="telephone=no" name="format-detection">
+	<meta content="email=no" name="format-detection">
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+<body>
+
+
+<svg style='background: #000;width: 100%;height: 300px;'>
+
+  <!-- Symbol -->
+  <symbol id="s-text">
+    <text text-anchor="middle" id='o-txt'
+          x="50%" y="50%" dy=".35em">
+      hello
+    </text>
+  </symbol>
+  <!-- Duplicate symbols -->
+  <use xlink:href="#s-text" class="text text1"></use>
+  <use xlink:href="#s-text" class="text text2"></use>
+  <use xlink:href="#s-text" class="text text3"></use>
+  <use xlink:href="#s-text" class="text text4"></use>
+ 
+</svg>
+
+<svg id="svg01" width="200" height="100">
+    <desc>三次贝塞尔曲线</desc><defs></defs>
+    <path class='path' d="M10 100 C0 0 200 0 190 100" stroke="#000000" fill="none" style="stroke-width: 2px;" id='path01'></path>
+    <circle cx="" cy="" r="10" fill="red">
+		<animateMotion dur="2s" repeatCount="indefinite">
+	      <mpath xlink:href="#path01"/>
+	    </animateMotion>
+	</circle>
+</svg>
+
+
+<svg id="svg" width="200" height="100">
+    <desc>三次贝塞尔曲线</desc><defs></defs>
+    <path class='path' d="M10 0 C0 100 200 100 190 0" stroke="#000000" fill="none" style="stroke-width: 2px;" id='path02'></path>
+    <circle cx="" cy="" r="10" fill="red">
+		<animateMotion dur="3s" repeatCount="indefinite">
+	      <mpath xlink:href="#path02"/>
+	    </animateMotion>
+	</circle>
+</svg>
+
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="300px"
+   height="120px" viewBox="0 0 300 120" enable-background="new 0 0 300 120" xml:space="preserve" style='background: #000;'>
+
+   <path fill-rule="evenodd" clip-rule="evenodd" fill="none" stroke="#009944" stroke-miterlimit="10" d="M0,63.5
+      c0,0,33.198-27.804,62-17c26.003,6.606,40.557,27.21,67,38c70.758-13,50.408-32.952,100-47c46.793,3.212,58.752,21.528,67,21" id='path03'></path>
+  <g id="yy">
+      <image xlink:href="./images/01.png" x="0" y="0"/>
+      <animateMotion dur="3s" repeatCount="indefinite">
+        <mpath xlink:href="#path03"/>
+      </animateMotion>
+  </g>
+</svg>
+
+<div class="svg-wraper">
+	<svg height="60" width="320" xmlns="http://www.w3.org/2000/svg">
+	    <rect class="shape" height="60" width="320" />
+	  </svg>
+	<div class="txt">hover</div>
+</div>
+
+<svg class="heart-loader" viewBox="0 0 90 90">
+  <g class="heart-loader__group">
+    <path class="heart-loader__square" stroke-width="1" fill="none" d="M0,30 0,90 60,90 60,30z"></path>
+   <!--  <path class="heart-loader__circle m--left" stroke-width="1" fill="none" d="M60,60 a30,30 0 0,1 -60,0 a30,30 0 0,1 60,0"></path>
+    <path class="heart-loader__circle m--right" stroke-width="1" fill="none" d="M60,60 a30,30 0 0,1 -60,0 a30,30 0 0,1 60,0"></path>
+    <path class="heart-loader__heartPath" stroke-width="2" d="M60,30 a30,30 0 0,1 0,60 L0,90 0,30 a30,30 0 0,1 60,0"></path> -->
+  </g>
+</svg>
+
+<svg width='160px' heigh='108px;'>
+	<g id="pen"><polygon fill="#FFFFFF" points="41.2,87.1 23.8,101.8 6.4,87.1 6.4,28.9 17.4,24.5 29,24.5 41.2,28.9 	"></polygon><polygon fill="none" stroke="#00D9B3" stroke-width="2.979" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+                				41.2,87.1 23.8,101.8 6.4,87.1 6.4,28.9 17.4,24.5 29,24.5 41.2,28.9 	"></polygon><polyline fill="#FFFFFF" points="6.4,87.1 16.8,81.5 30.3,81.5 41.2,87.1"></polyline><polyline fill="none" stroke="#00D9B3" stroke-width="2.979" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+                				6.4,87.1 16.8,81.5 30.3,81.5 41.2,87.1 	"></polyline><line fill="#FFFFFF" x1="17.4" y1="24.5" x2="17.4" y2="81.5"></line><line fill="none" stroke="#00D9B3" stroke-width="2.979" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="17.4" y1="24.5" x2="17.4" y2="81.5"></line><line fill="#FFFFFF" x1="29" y1="24.5" x2="29" y2="81.5"></line><line fill="none" stroke="#00D9B3" stroke-width="2.979" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="29" y1="24.5" x2="29" y2="81.5"></line><path fill="#FFFFFF" d="M30.3,96.3c-1.5-1.8-3.9-3-6.4-3c-2.6,0-4.9,1.2-6.4,3l6.4,5.4L30.3,96.3z"></path><path fill="none" stroke="#00D9B3" stroke-width="2.979" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+                				M30.3,96.3c-1.5-1.8-3.9-3-6.4-3c-2.6,0-4.9,1.2-6.4,3l6.4,5.4L30.3,96.3z"></path></g>
+
+	<g id="heart"><path fill="#FFFFFF" d="M23.6,101.8c-20-11.5-19-24-19-24c0-7.3,5.9-13.2,13.2-13.2c4,0,7.5,1.8,10,4.5c2.4-2.8,6-4.5,10-4.5
+                				c7.3,0,13.2,5.9,13.2,13.2c0,0,1,12.6-19,24h40.2"></path><path id="heartpath" fill="none" stroke="#00D9B3" stroke-width="2.979" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="0, 1000" d="
+                				M23.6,101.8c-20-11.5-19-24-19-24c0-7.3,5.9-13.2,13.2-13.2c4,0,7.5,1.8,10,4.5c2.4-2.8,6-4.5,10-4.5c7.3,0,13.2,5.9,13.2,13.2
+                				c0,0,1,12.6-19,24h40.2"></path></g>
+</svg>
+
+
+<script type="text/javascript">
+
+</script>
+</body>
+</html>

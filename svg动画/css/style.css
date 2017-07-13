@@ -1,0 +1,166 @@
+*{
+		margin:0;padding: 0;
+	}
+  body{
+    background: #f6f6f6;
+  }
+svg{
+	/*border: 1px solid #ff0000;*/
+	/*margin: 0 auto;+*/
+	display: inline-block;
+}
+.path{
+	stroke-dasharray: 315;
+    stroke-dashoffset: 315;
+    -webkit-animation: go 4s ease-in-out forwards;
+}
+@-webkit-keyframes go {
+    0% {
+        stroke-dashoffset: 888;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+.text {
+	fill: none;
+	stroke-width: 5;
+	stroke-dasharray: 0 400;
+	stroke-dashoffset: 0;
+	font: 300px/1 Open Sans, Impact;
+	text-transform: uppercase;
+	margin: 0;
+}
+
+.text1 {
+  stroke: green;
+  animation: stroke 6s  ease-in-out forwards;
+
+}
+.text2 {
+  stroke: red;
+  animation: stroke1 6s  ease-in-out forwards;
+
+}
+
+.text3{
+  stroke: yellow;
+  animation: stroke2 6s  ease-in-out forwards;
+
+}
+.text4{
+  stroke: blue;
+  animation: stroke3 6s  ease-in-out forwards;
+
+}
+
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 1000;
+    stroke-dasharray: 80 160;
+  }
+}
+
+@keyframes stroke1 {
+  100% {
+    stroke-dashoffset: 1040;
+    stroke-dasharray: 80 160;
+  }
+}
+
+
+@keyframes stroke2 {
+  100% {
+    stroke-dashoffset: 1080;
+    stroke-dasharray: 80 160;
+  }
+}
+@keyframes stroke3 {
+  100% {
+    stroke-dashoffset: 1160;
+    stroke-dasharray: 80 160;
+  }
+}
+/* Other styles */
+html, body {
+  height: 100%;
+}
+
+.svg-wraper{
+	width: 320px;
+	height: 60px; 
+  background: #333;
+  padding: 30px;
+  display: inline-block;
+}
+.svg-wraper .txt{
+	color: #fff;
+  font-family: 'Roboto Condensed';
+  font-size: 22px;
+  letter-spacing: 8px;
+  line-height: 32px;
+  position: relative;
+  top: -48px;
+  text-align: center;
+}
+.svg-wraper .shape{
+    fill: transparent;
+    stroke-dasharray: 140 540;
+    stroke-dashoffset: -474;
+    stroke-width: 8px;
+    stroke: #19f6e8;
+}
+@keyframes draw {
+  0% {
+    stroke-dasharray: 140 540;
+    stroke-dashoffset: -474;
+    stroke-width: 8px;
+  }
+  100% {
+    stroke-dasharray: 760;
+    stroke-dashoffset: 0;
+    stroke-width: 2px;
+  }
+}
+
+.svg-wraper:hover .shape {
+  -webkit-animation: 0.5s draw linear forwards;
+  animation: 0.5s draw linear forwards;
+}
+
+
+.heart-loader {
+    width: 180px;
+    height: 180px;
+    overflow: visible;
+}
+.heart-loader__square {
+    stroke: #B8B8B8;
+    stroke-dasharray: 240, 240;
+    stroke-dashoffset: 240;
+    -webkit-animation: square-anim 7s 1s infinite;
+    animation: square-anim 7s 1s infinite;
+}
+@keyframes square-anim {
+  12% {
+      stroke-dashoffset: 0;
+  }
+
+  43% {
+      stroke-dashoffset: 0;
+      opacity: 1;
+  }
+
+
+  85% {
+      stroke-dashoffset: 0;
+      opacity: 0;
+  }
+
+  100% {
+      stroke-dashoffset: 0;
+      opacity: 0;
+  }
+}
