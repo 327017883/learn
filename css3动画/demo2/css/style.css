@@ -1,0 +1,62 @@
+.dot{
+	width: 20px;
+	height: 20px;	
+	margin-top: 300px;
+	margin-left: 300px;
+	position: relative;
+	animation: XAxis 2.5s infinite ease-in;
+}
+
+.dot .child{
+	
+	display: block;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: gray;
+	animation: YAxis 2.5s infinite ease-out;
+}
+
+@keyframes XAxis{
+	50%{
+		animation-timing-function: ease-in;
+		transform: translateX(150px);
+	}
+}
+
+@keyframes YAxis{
+	50%{
+		animation-timing-function: ease-out;
+		transform: translateY(150px);
+	}
+}
+
+.circle{
+	width: 150px;height: 150px;border: 1px red solid;border-radius: 50%;
+	margin: 0 auto;
+	animation: spin 5s infinite linear;
+}
+.circle .child{
+	width: 30px;
+	height: 30px;
+	background: gray;
+	margin-left: 14px;
+	border-radius: 50%;
+
+	animation: spin-reverse 5s infinite linear;
+}
+
+/* 顺时针自转 */
+@keyframes spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+
+ /* 逆时针自转 */    
+@keyframes spin-reverse {    
+    from {
+        transform: rotate(1turn);
+    }
+}
