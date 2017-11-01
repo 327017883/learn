@@ -21,8 +21,8 @@ var ctx = c.getContext("2d");
 
 var rectList = [ 
 	[50,50,50,50], 
-	[120,120,80,60], 
-	[30,150,60,80] 
+	[50,160,50,50],
+	[50,240,50,50] 
 ];
 
 var isOver = noOver = 0;
@@ -36,6 +36,7 @@ rectList.forEach(function(v, n) {
 var startPoint;
 var isDown = !1;
 var startX, startY;
+var ele;
 
 c.addEventListener('mousedown', function(e){	
 
@@ -53,6 +54,8 @@ c.addEventListener('mousedown', function(e){
 				startX =  rectList[n][0];
 				startY =  rectList[n][1];
 				ctx.strokeStyle = "#ff4444";
+
+				ele = n;
 			} else { 
 				ctx.strokeStyle = "#000";
 			} 
@@ -76,8 +79,8 @@ c.addEventListener("mousemove", function(e){
 				
 				if(isDown){
 					movePoint = getCanvasPoint(e.pageX, e.pageY); 
-					rectList[n][0] = startX + movePoint.x - startPoint.x;
-					rectList[n][1] = startY + movePoint.y - startPoint.y;
+					rectList[ele][0] = startX + movePoint.x - startPoint.x;
+					rectList[ele][1] = startY + movePoint.y - startPoint.y;
 				}
 
 				ctx.strokeStyle = "#ff4444";
