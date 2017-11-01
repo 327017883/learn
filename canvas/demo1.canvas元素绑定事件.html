@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+
+<style type="text/css">
+	body{ margin: 0; }
+
+</style>
+<body>
+
+<canvas id='main' width='600' height="600"></canvas>
+<script type="text/javascript">
+
+var c = document.getElementById('main');
+var ctx = c.getContext("2d");
+
+var rectList = [ 
+	[50,50,50,50], 
+	[120,120,80,60], 
+	[30,150,60,80] 
+];
+
+rectList.forEach(function(v, n) { 
+
+	drawRect(rectList[n][0],rectList[n][1],rectList[n][2],rectList[n][3]); 
+	ctx.stroke(); 
+}); 
+
+c.addEventListener("mousemove", function(e){ 
+
+	var point = getCanvasPoint(e.pageX, e.pageY); 
+
+	ctx.clearRect(0, 0, c.width, c.height);  
+
+	rectList.forEach(function(v, n) { 
+
+			drawRect(rectList[n][0],rectList[n][1],rectList[n][2],rectList[n][3]);
+
+			if(ctx.isPointInPath(point.x, point.y)){ 
+				ctx.strokeStyle = "#ff4444"; 
+			} else { 
+				ctx.strokeStyle = "#000"; 
+			} 
+		ctx.stroke(); 
+	}) 
+}, !1);
+
+function getCanvasPoint(x,y) { 
+
+	var left = c.offsetLeft;
+	var top = c.offsetTop;
+
+	return { 
+		x: x - left, 
+		y: y - top 
+	} 
+}
+
+function drawRect(x, y, w, h){
+
+	ctx.beginPath();
+	ctx.lineWidth = "4";
+	ctx.strokeStyle = "gray"; 
+	ctx.rect(x, y, w, h);
+	ctx.stroke(); 
+}
+
+
+</script>
+</body>
+</html>
