@@ -7,7 +7,9 @@
 
 <style type="text/css">
 	body{ margin: 0; }
-
+	.cursor{
+		cursor: pointer;
+	}
 </style>
 <body>
 
@@ -22,6 +24,8 @@ var rectList = [
 	[120,120,80,60], 
 	[30,150,60,80] 
 ];
+
+var isOver = noOver = 0;
 
 rectList.forEach(function(v, n) { 
 
@@ -40,12 +44,22 @@ c.addEventListener("mousemove", function(e){
 			drawRect(rectList[n][0],rectList[n][1],rectList[n][2],rectList[n][3]);
 
 			if(ctx.isPointInPath(point.x, point.y)){ 
-				ctx.strokeStyle = "#ff4444"; 
+				ctx.strokeStyle = "#ff4444";
+				isOver++; 
 			} else { 
-				ctx.strokeStyle = "#000"; 
+				ctx.strokeStyle = "#000";
+				noOver++; 
 			} 
 		ctx.stroke(); 
-	}) 
+	});
+
+	if(isOver == 1 && noOver == 2){
+		c.className = 'cursor';
+	}else{
+		c.className = '';
+	}
+	isOver = noOver = 0;
+	 
 }, !1);
 
 function getCanvasPoint(x,y) { 
