@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+
+<style type="text/css">
+	body{ margin: 0; }
+	.cursor{
+		cursor: pointer;
+	}
+</style>
+<body>
+
+<canvas id='main' width='600' height="600"></canvas>
+<script type="text/javascript">
+
+var c = document.getElementById('main');
+var ctx = c.getContext("2d");
+let width = c.width;
+let height = c.height;
+var initY = 5;
+var initX = 36;
+
+ctx.fillStyle = "#ececec";
+ctx.fillRect(0,0, width, height);
+
+var gradient = ctx.createLinearGradient(0, 0, width, 0);
+
+gradient.addColorStop("0","red");
+gradient.addColorStop("0.5","blue");
+gradient.addColorStop("1.0","red");
+
+// 用渐变填色
+ctx.strokeStyle = gradient;
+
+ctx.textBaseline = "hanging";
+ctx.font = "30px Microsoft Yahei";
+ctx.textAlign = 'center';
+ctx.lineWidth = '1'
+ctx.strokeText("关于邮储银行升级公告", width/2, initY);
+
+ctx.font = '14px Microsoft Yahei';
+ctx.textAlign = 'start';
+ctx.fillStyle = 'rgb(51, 51, 51)';
+ctx.fillText('尊敬的民投金服用户：', 10, initY += 30);
+
+var s1 = '您好！邮储银行将于2017年11月3日21:30至11月4日12:30进行系统维护；农业银行将于2017年10月28日18:00至20:00进行系统维护。';
+autoWrap(s1, c);
+
+ctx.fillText('在此期间，邮储银行、农业银行充值服务将暂停，维护期间给您带来的不便，敬请谅解。', initX, initY += 20);
+ctx.fillText('感谢您对民投金服的关注与支持。', initX, initY += 20);
+
+ctx.textAlign = 'right';
+ctx.fillText('民投金服运营中心', width, initY += 20);
+ctx.fillText('2017年10月27日', width, initY += 20);
+
+function autoWrap(str, canvas) {
+
+	var lWidth = 0;
+	var ct = canvas.getContext("2d");
+	var x;
+
+	for(var i = 0, len = str.length; i < len; i++){
+
+		lWidth += ct.measureText(str[i]).width;
+
+		if( lWidth >= canvas.width - initX){
+
+			if(canvas.isFirst == void(0)){
+				x = 36;
+			}else{
+				x = 10;
+				
+			}
+			
+			ctx.fillText(str.substring(0, i), x, initY += 20);
+			canvas.isFirst = !1;
+			autoWrap(str.substring(i, len), canvas);
+			break;		
+		}
+		if(i == len - 1){
+			ctx.fillText(str, 10, initY += 20);
+		}
+	}
+
+}
+
+</script>
+</body>
+</html>

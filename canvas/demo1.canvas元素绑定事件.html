@@ -30,7 +30,6 @@ var isOver = noOver = 0;
 rectList.forEach(function(v, n) { 
 
 	drawRect(rectList[n][0],rectList[n][1],rectList[n][2],rectList[n][3]); 
-	ctx.stroke(); 
 }); 
 
 var startPoint;
@@ -123,7 +122,6 @@ function drawRect(x, y, w, h){
 	ctx.lineWidth = "4";
 	ctx.strokeStyle = "#000"; 
 	ctx.rect(x, y, w, h);
-	ctx.stroke(); 
 }
 
 
