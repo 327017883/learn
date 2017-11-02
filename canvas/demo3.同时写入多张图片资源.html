@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+
+<style type="text/css">
+	body{ margin: 0; }
+	.cursor{
+		cursor: pointer;
+	}
+</style>
+<body>
+
+<canvas id='main' width='600' height="600"></canvas>
+<script type="text/javascript">
+
+	function CreateImage(arr){
+
+		this.arr = arr;
+		this.img = [];	
+	}
+
+	CreateImage.prototype = {
+
+		constructor: CreateImage,
+
+		createImg: function(src, fn){
+
+			var imgage = new Image();
+			var that = this;
+
+			imgage.onload = function(){
+				
+				that.img.push(this);
+
+				if(that.img.length == that.arr.length){
+					fn(that.img)
+				}
+				imgage = null;
+			}
+
+			imgage.src = src;
+		},
+		load: function(fn){
+
+			var that = this;
+
+			this.arr.forEach(function(src){
+				that.createImg(src, fn);
+			});		
+		}
+	}
+</script>
+<script type="text/javascript">
+
+var c = document.getElementById('main');
+var ctx = c.getContext("2d");
+
+let width = c.width;
+let height = c.height;
+
+ctx.fillStyle = "#d8d8d8";
+ctx.fillRect(0,0,width,height);
+
+new CreateImage([
+		'./images/hill-Qomolangma.png',
+		'./images/hill-Kilimanjaro.png',		
+		'./images/hill-Kilimanjaro.png',
+		'./images/hill-Qomolangma.png'
+]).load(function(img){
+
+	ctx.textBaseline = "hanging";
+
+	var x = y = 20;
+
+	img.forEach(function(i){
+
+		var imgWdh = i.width;
+		var imgHt = i.height;
+		var newImgWdh, newImgHt;
+		
+
+		if(imgWdh > width || imgHt > height){
+			newImgWdh = width/2;
+			newImgHt = newImgWdh*imgHt/imgWdh;
+		}else{
+			newImgWdh = imgWdh;
+			newImgHt = imgHt;
+		}
+
+		x = (width - newImgWdh)/2;
+
+		ctx.drawImage(i, x, y, newImgWdh, newImgHt);
+
+		y += newImgHt + 20;
+	})
+});
+
+</script>
+</body>
+</html>
