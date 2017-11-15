@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>移动端 三级联动</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+	<style type="text/css">
+		html,body{height: 100%;padding:0;}
+		.container{
+
+		    display: -webkit-box;
+		    display: -ms-flexbox;
+		    display: flex;
+		    align-items: center;
+
+		    height: 40px;
+		    padding: 10px 30px;
+		    border-bottom: 1px gray solid;
+		}
+		.con-r{
+		    -webkit-box-flex: 1;
+		    -ms-flex: 1;
+		    flex: 1;
+		    text-align: right;
+		}
+	</style>
+</head>
+<body>
+
+<div class='container'>
+	<div>一级</div>
+	<div class="weui_cell_ft with_arrow con-r" id='level1'><span>请选择</span></div>
+</div>
+<div class='container'>
+	<div>二级联动</div>
+	<div class="weui_cell_ft with_arrow con-r" id='level2'><span>请选择</span></div>
+</div>
+<div class='container'>
+	<div>三级联动</div>
+	<div class="weui_cell_ft with_arrow con-r" id='level3'><span>请选择</span></div>
+</div>
+
+<div class='container'>
+	<div>年月日时分</div>
+	<div class="weui_cell_ft with_arrow con-r" id='dateTime2'><span>请选择</span></div>
+</div>
+
+<div class='container'>
+	<div>年月日时</div>
+	<div class="weui_cell_ft with_arrow con-r" id='dateTime3'><span>请选择</span></div>
+</div>
+
+<div class='container'>
+	<div>年月日</div>
+	<div class="weui_cell_ft with_arrow con-r" id='dateTime4'><span>请选择</span></div>
+</div>
+
+
+<script type="text/javascript" src='./js/AddressChinaData.js'></script>
+<script type="text/javascript" src='./js/three.js' ></script>
+<script type="text/javascript" src='./js/dateTime.js' ></script>
+<script type="text/javascript" src='./js/test.js'></script>
+
+</body>
+</html>
