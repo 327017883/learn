@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <title>scale Img</title>
+
+    <style type="text/css">
+        div.pinch-zoom,
+        div.pinch-zoom img{
+            width: 100%;
+            -webkit-user-drag: none;
+        }
+
+    </style>
+    <link rel="stylesheet" href="./Pinchzoom.js Demo_files/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+</head>
+
+
+
+        <div class="pinch-zoom">
+            <img src="./Pinchzoom.js Demo_files/frog.jpg">         
+        </div>
+
+
+<script type="text/javascript" src="./Pinchzoom.js Demo_files/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="./Pinchzoom.js Demo_files/pinchzoom.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('div.pinch-zoom').each(function () {
+            new RTP.PinchZoom($(this), {});
+        });
+    })
+</script>
+<body>

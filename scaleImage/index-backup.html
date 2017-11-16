@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>放大缩小图片</title>
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<link rel="stylesheet" type="text/css" href="./css/index.css">
+</head>
+<body>
+<div id='container'>
+	<img id='scale-demo' src="./images/95eef01f3a292df504213240b4315c6035a87381.jpg">
+</div>
+
+
+
+<script type="text/javascript" src='./js/hammer.js'></script>
+<script type="text/javascript" src='./js/scaleImage.js'></script>
+<script type="text/javascript">
+	new ScacleImage({
+		target: '#scale-demo'
+	});
+</script>
+
+<!-- <script type="text/javascript" src='./js/jquery.1.11.3.js'></script> -->
+<!-- <script type="text/javascript" src='./js/gesture.js'></script> -->
+<!-- <script type="text/javascript" src='./js/touch.js'></script> -->
+<!-- <script type="text/javascript" src='./js/touch.js'></script>
+<script type="text/javascript">
+
+
+touch.on('#scale-demo', 'tap', function(e){
+	
+	
+});
+
+</script> -->
+</body>
+</html>

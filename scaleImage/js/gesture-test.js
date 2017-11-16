@@ -1,0 +1,5 @@
+tap
+doubeltap
+
+pressing
+pressend
