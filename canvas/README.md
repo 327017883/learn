@@ -1,0 +1,1 @@
+fillRect、strokeRect 不支持 isPointInPath 方法.
