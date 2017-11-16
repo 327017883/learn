@@ -21,15 +21,16 @@ var ctx = c.getContext("2d");
 
 var rectList = [ 
 	[50,50,50,50], 
-	[50,160,50,50],
-	[50,240,50,50] 
+	[100,100,50,50],
+	[150,150,50,50] 
 ];
 
 var isOver = noOver = 0;
 
 rectList.forEach(function(v, n) { 
 
-	drawRect(rectList[n][0],rectList[n][1],rectList[n][2],rectList[n][3]); 
+	drawRect(rectList[n][0],rectList[n][1],rectList[n][2],rectList[n][3]);
+	ctx.stroke(); 
 }); 
 
 var startPoint;
@@ -87,8 +88,8 @@ c.addEventListener("mousemove", function(e){
 			} else { 
 				ctx.strokeStyle = "#000";
 				noOver++; 
-			} 
-		ctx.stroke(); 
+			}
+			ctx.stroke();  
 	});
 
 	if(isOver == 1 && noOver == 2){
@@ -120,8 +121,12 @@ function drawRect(x, y, w, h){
 
 	ctx.beginPath();
 	ctx.lineWidth = "4";
-	ctx.strokeStyle = "#000"; 
-	ctx.rect(x, y, w, h);
+	ctx.moveTo(x, y);
+	ctx.lineTo(x + w, y);
+	ctx.lineTo(x + w, y + h);
+	ctx.lineTo(x, y + h);
+	ctx.closePath();	
+	
 }
 
 
