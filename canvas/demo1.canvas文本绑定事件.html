@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+
+<style type="text/css">
+	body{ margin: 0; }
+	.cursor{
+		cursor: pointer;
+	}
+</style>
+<body>
+
+<canvas id='main' width='600' height="600"></canvas>
+<script type="text/javascript">
+
+var canvas = document.getElementById('main');
+var ctx = canvas.getContext('2d');
+
+var txt = '关于邮储银行升级公告';
+var x = 200;
+var y = 200;
+
+ctx.textBaseline = "hanging";
+ctx.font = "20px Microsoft Yahei";
+ctx.textAlign = 'left';
+ctx.fillStyle = '#000';
+ctx.fillText(txt, x, y);
+
+var txtWidth = ctx.measureText(txt).width;
+var txtHt = 20;
+
+canvas.addEventListener('mousemove', function(e){
+
+	var point = getCanvasPoint(e.pageX, e.pageY);
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	if(point.x > x && point.x < x + txtWidth && point.y > y && point.y < txtHt + y){
+		ctx.fillStyle = '#0f0';
+		canvas.setAttribute('class', 'cursor')
+	}else{
+		ctx.fillStyle = '#000';
+		canvas.removeAttribute('class', 'cursor')
+	}
+
+	ctx.fillText(txt, x, y);
+
+}, !1)
+
+function getCanvasPoint(x,y) { 
+
+	var left = canvas.offsetLeft;
+	var top = canvas.offsetTop;
+
+	return { 
+		x: x - left, 
+		y: y - top 
+	} 
+}	
+
+</script>
+</body>
+</html>
