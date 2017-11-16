@@ -20,7 +20,7 @@ RingGraph.prototype.init = function(){
 
 	this.initOption();
 
-	this.series();
+	//this.series();
 
 	this.legend();	
 
@@ -105,6 +105,11 @@ RingGraph.prototype.legend = function(){
 	var data = legend.data;
 	ctx = this.canvas.ctx;
 
+	var rW = 10;
+	var rH = 10;
+	var sX = 10;
+	var xY = 10;
+
 	data.forEach(function(v, i){
 
 		that.pathArr.push(function(){
@@ -114,8 +119,16 @@ RingGraph.prototype.legend = function(){
 			ctx.font = '14px Microsoft Yahei';
 			ctx.fillStyle = that.color[i];
 
-			ctx.fillText(v, 30, (i+1)*20);			
-			ctx.fillRect(10, i == 0 ? 10 : i*20+9, 10,10);
+			ctx.fillText(v, 30, (i+1)*20);
+
+			ctx.moveTo(sX, xY);
+			ctx.moveTo(sX + rW, xY);
+			ctx.moveTo(sX + rW, xY);
+			ctx.moveTo(sX + rW, xY);
+			ctx.closePath();
+			ctx.fill();
+			
+			//ctx.fillRect(10, i == 0 ? 10 : i*20+9, 10,10);
 
 		})		
 	});
