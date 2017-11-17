@@ -2,55 +2,78 @@
 function RingGraph(container, options){
 
 	this.container = container;
-	this.options = options;
-	this.color = ['#b4b71a', '#64b366', '#b72c2d', '#65cb26', '#0c95de'];
+
+	var defaults = {
+		color: ['#e6b244', '#7f0273', '#f97c6a', '#794d1a', '#b859bb', '#fc5a51', '#baf986', '#ef4c44', '#4ecde7', '#ef2d3a', '#83de30', '#91a3a3']
+	};
+
+	this.options = Object.assign(options, defaults);
 	this.canvas = {};
 	this.pathArr = [];
+	this.events = [];
 
 	this.init();
-	
-	var that = this;					
-	addEvent(window, 'resize', function(){
-		//that.container.innerHTML = ''; 
-		//that.init();
-	});
+
+	window.addEventListener('resize', function(){		
+
+		this.container.innerHTML = ''
+		this.init();
+
+	}.bind(this), false)
 }
 
 RingGraph.prototype.init = function(){
 
-	this.initOption();
+	this.initCanvas();
 
-	//this.series();
+	this.series();
 
 	this.legend();	
 
 	this.draw();
 
-	this.initEvent();
+	this.initEvent()	
 }
 
-RingGraph.prototype.initOption = function(){
+RingGraph.prototype.initCanvas = function(){
 
-	var dom = this.canvas.dom = document.createElement('canvas');
+	var dom = document.createElement('canvas');
+	var ctx =  dom.getContext('2d');
 
-	this.canvas.width = dom.width = this.container.offsetWidth;
-	this.canvas.height = dom.height = this.container.offsetHeight;	
+	var bgColor = getStyle(this.container, 'backgroundColor');
 
-	var ctx = this.canvas.ctx = dom.getContext('2d');
+	if(/^rgba\(0,0,0,0\)$/.test(bgColor.replace(/\s+/g, ''))){
+		bgColor = '#fff';
+	}
+	
+	var width = this.container.offsetWidth;
+	var height = this.container.offsetHeight;
 
-	ctx.fillStyle = this.canvas.bgColor = getStyle(this.container, 'backgroundColor');
-	ctx.fillRect(0, 0, dom.width, dom.height);
+	dom.width = width;
+	dom.height = height;
+
+	this.canvas.dom = dom;
+	this.canvas.ctx = ctx;
+	this.canvas.width = width;
+	this.canvas.height = height;
+	this.canvas.bgColor = bgColor;
+
+	ctx.clearRect(0, 0, width, height);
 
 	this.container.appendChild(dom);
+
 }
 RingGraph.prototype.series = function(){
 
 	var canvas = this.canvas;
 	var options = this.options;
+	var colors = options.color;
 	var height = canvas.height;
 	var width = canvas.width;
 	var bgColor = canvas.bgColor;
 	var ctx = canvas.ctx;
+	var data = options.series.data;
+	var that = this;
 
 	var r;
 	if(width > height){
@@ -64,37 +87,69 @@ RingGraph.prototype.series = function(){
 		return parseFloat(e)/100;
 	});	
 
-	this.pathArr.push(function(){
+	//外环圆
 
-		ctx.beginPath();
-		ctx.arc(width/2, height/2, r*radius[1], 0, 2*Math.PI);
-		ctx.strokeStyle = bgColor
-		ctx.fillStyle="#15e4b6";
-		ctx.stroke();
-		ctx.fill();
-		ctx.closePath();
+	var total = 0;
+	var start = 0;
+
+	data.forEach(function(d, i){
+
+		total += d.value;
+		
+		that.pathArr.push({
+
+			fn: function(){
+
+					var startDeg = start;
+					var endDeg = start + 2*Math.PI*d.value/total;
+
+					ctx.beginPath();
+
+					for(; startDeg < endDeg; ){
+
+						startDeg += 0.1;
+						ctx.strokeStyle = colors[i]
+						ctx.fillStyle = colors[i]
+						ctx.moveTo(width/2, height/2);
+						ctx.arc(width/2, height/2, r*radius[1], start, startDeg);
+						ctx.closePath();					
+						ctx.fill();
+						
+					}
+
+					start += 2*Math.PI*d.value/total;
+				}
+			});
+	})
+	
+
+	//内圆
+	that.pathArr.push({
+		fn: function(){
+
+			ctx.beginPath();	
+			ctx.arc(width/2, height/2, r*radius[0], 0, 2*Math.PI);
+			ctx.strokeStyle = bgColor;
+			ctx.fillStyle = bgColor;
+			ctx.stroke();
+			ctx.fill();
+			ctx.closePath();
+		}
 	});
+		
 
-	this.pathArr.push(function(){
+	that.pathArr.push({
+		fn: function(){
 
-		ctx.beginPath();	
-		ctx.arc(width/2, height/2, r*radius[0], 0, 2*Math.PI);
-		ctx.strokeStyle = bgColor;
-		ctx.fillStyle = bgColor;
-		ctx.stroke();
-		ctx.fill();
-		ctx.closePath();
-	});
-
-	this.pathArr.push(function(){
-
-		ctx.beginPath();
-		var txt = options.series.name;
-		ctx.font = "30px Microsoft Yahei";
-		ctx.textAlign = 'center';
-		ctx.fillStyle = '#404040';
-		ctx.fillText(txt, width/2, height/2);
-		ctx.closePath();
+			ctx.beginPath();
+			var txt = options.series.name;
+			ctx.textBaseline = "middle";
+			ctx.font = "30px Microsoft Yahei";
+			ctx.textAlign = 'center';
+			ctx.fillStyle = '#404040';
+			ctx.fillText(txt, width/2, height/2);
+			ctx.closePath();
+		}
 	});	
 }
 
@@ -102,34 +157,48 @@ RingGraph.prototype.legend = function(){
 
 	var that = this;
 	var legend = this.options.legend;
+	var colors = this.options.color;
 	var data = legend.data;
 	ctx = this.canvas.ctx;
 
+	var sX = 10;
+	var sY = 10;
 	var rW = 10;
 	var rH = 10;
-	var sX = 10;
-	var xY = 10;
 
-	data.forEach(function(v, i){
+	data.forEach(function(txt, i){
 
-		that.pathArr.push(function(){
+		that.pathArr.push({
 
-			ctx.beginPath();
-			ctx.textAlign = legend.x;
-			ctx.font = '14px Microsoft Yahei';
-			ctx.fillStyle = that.color[i];
+			fn: function(callback){
 
-			ctx.fillText(v, 30, (i+1)*20);
+				ctx.beginPath();
+				ctx.textBaseline = "hanging";
+				ctx.textAlign = legend.x;
+				ctx.font = '14px Microsoft Yahei';
+				ctx.fillStyle = colors[i];				
 
-			ctx.moveTo(sX, xY);
-			ctx.moveTo(sX + rW, xY);
-			ctx.moveTo(sX + rW, xY);
-			ctx.moveTo(sX + rW, xY);
-			ctx.closePath();
-			ctx.fill();
-			
-			//ctx.fillRect(10, i == 0 ? 10 : i*20+9, 10,10);
+				callback && callback()
 
+				ctx.fillText(txt, sX+rW*2, (sY+rH)*i+ sY-2);			
+
+				ctx.moveTo(sX, (sY+rH)*i+ sY);
+				ctx.lineTo(sX + rW, (sY+rH)*i+ sY);
+				ctx.lineTo(sX + rW, (sX + rW)*(i+1) );
+				ctx.lineTo(sX, (sX + rW)*(i+1));
+
+				ctx.fill();
+				ctx.closePath();
+			},
+			type: 'txt',
+			styles: {
+				fontSize: 20,
+				text: txt,
+				x: sX,
+				y: (sY+rH)*i+ sY,
+				w: sX+rW*2,
+				color: colors[i]
+			}
 		})		
 	});
 	
@@ -137,23 +206,50 @@ RingGraph.prototype.legend = function(){
 
 RingGraph.prototype.initEvent = function(){
 
-	var canvas = this.canvas;
 	var that = this;
 
-	canvas.dom.addEventListener("mouseup", function(e){ 
+	var canvas = that.canvas;
+	var dom = canvas.dom;
 
+	dom.addEventListener("mousemove", function(e){ 
+
+		var isOver = 0;
 		var point = getCanvasPoint(e.pageX, e.pageY);	
 
-		canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
+		var ctx = canvas.ctx;
 
-		that.pathArr.forEach(function(fn){
-			fn();
+		ctx.clearRect(0, 0, canvas.width, canvas.height);		
+
+		var arr = that.pathArr;
+
+		that.pathArr.forEach(function(obj, i){			
 			
-			if(ctx.isPointInPath(point.x, point.y)){
-				console.log('ok')
-			}
-		});
+			obj.fn();
 
+			if(obj.type == 'txt'){				
+
+				let styles = obj.styles;
+				let color = ctx.fillStyle.colorRgb();
+
+				if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
+					isOver++;		
+
+					obj.fn(function(){
+						ctx.fillStyle = '#000';
+					});
+				}
+			}else{
+				if(ctx.isPointInPath(point.x, point.y)){
+					isOver++;	
+				}
+			}			
+		});	
+
+		if(isOver == 1){
+			dom.className = 'cursor';
+		}else{
+			dom.className = '';
+		}
 	}, !1);
 }
 
@@ -162,13 +258,20 @@ RingGraph.prototype.draw = function(){
 	var canvas = this.canvas;
 	canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	this.pathArr.forEach(function(fn){
-		fn()
+	canvas.ctx.fillStyle = canvas.bgColor;
+	canvas.ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	this.pathArr.forEach(function(obj){
+		obj.fn()
 	});
 	
 }
 RingGraph.prototype.setOption = function(){
 
+}
+
+RingGraph.prototype.addEvent = function(fn){
+	this.events.push(fn);
 }
 
 function getStyle(element, attr){
@@ -226,3 +329,59 @@ function getCanvasPoint(x,y) {
 		y: y - top 
 	} 
 }
+
+var reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
+/*RGB颜色转换为16进制*/
+String.prototype.colorHex = function(){
+     var that = this;
+     if(/^(rgb|RGB)/.test(that)){
+          var aColor = that.replace(/(?:\(|\)|rgb|RGB)*/g,"").split(",");
+          var strHex = "#";
+          for(var i=0; i<aColor.length; i++){
+               var hex = Number(aColor[i]).toString(16);
+               if(hex === "0"){
+                    hex += hex;    
+               }
+               strHex += hex;
+          }
+          if(strHex.length !== 7){
+               strHex = that;    
+          }
+          return strHex;
+     }else if(reg.test(that)){
+          var aNum = that.replace(/#/,"").split("");
+          if(aNum.length === 6){
+               return that;    
+          }else if(aNum.length === 3){
+               var numHex = "#";
+               for(var i=0; i<aNum.length; i+=1){
+                    numHex += (aNum[i]+aNum[i]);
+               }
+               return numHex;
+          }
+     }else{
+          return that;    
+     }
+};
+
+/*16进制颜色转为RGB格式*/
+String.prototype.colorRgb = function(){
+     var sColor = this.toLowerCase();
+     if(sColor && reg.test(sColor)){
+          if(sColor.length === 4){
+               var sColorNew = "#";
+               for(var i=1; i<4; i+=1){
+                    sColorNew += sColor.slice(i,i+1).concat(sColor.slice(i,i+1));    
+               }
+               sColor = sColorNew;
+          }
+          //处理六位的颜色值
+          var sColorChange = [];
+          for(var i=1; i<7; i+=2){
+               sColorChange.push(parseInt("0x"+sColor.slice(i,i+2)));    
+          }
+          return "RGB(" + sColorChange.join(",") + ")";
+     }else{
+          return sColor;    
+     }
+};
