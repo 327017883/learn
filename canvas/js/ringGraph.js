@@ -11,11 +11,22 @@ function RingGraph(container, options){
 	this.canvas = {};
 	this.pathArr = [];
 	this.events = [];
+	this.id = 0;
 
 	this.init();	
+
+	window.addEventListener('resize', function(){
+
+		this.container.innerHTML = '';
+		this.init();
+
+	}.bind(this), false);
+
 }
 
 RingGraph.prototype.init = function(){
+
+	++this.id
 
 	this.initCanvas();
 
@@ -100,7 +111,7 @@ RingGraph.prototype.series = function(){
 		(function(start){						
 
 			var sDeg = start;
-			var eDeg = sDeg + .04
+			var eDeg = sDeg + .1
 
 			that.pathArr.push({
 
@@ -109,12 +120,12 @@ RingGraph.prototype.series = function(){
 					function run(){					
 
 						if(eDeg < endDeg){
-
+							
 							ctx.beginPath();
 							ctx.strokeStyle = colors[i]
 							ctx.fillStyle = colors[i]
 							ctx.moveTo(width/2, height/2);				
-							ctx.arc(width/2, height/2, r*radius[1], sDeg, eDeg+.04);
+							ctx.arc(width/2, height/2, r*radius[1], sDeg, eDeg+.1);
 							ctx.closePath();					
 							ctx.fill();
 
@@ -122,23 +133,31 @@ RingGraph.prototype.series = function(){
 							ctx.strokeStyle = bgColor;
 							ctx.fillStyle = bgColor;
 							ctx.moveTo(width/2, height/2);
-							ctx.arc(width/2, height/2, r*radius[0], sDeg-.06, eDeg+.08);
+							ctx.arc(width/2, height/2, 10, 0, 2*Math.PI);
+							ctx.closePath();
+							ctx.fill();
+
+							ctx.beginPath();
+							ctx.strokeStyle = bgColor;
+							ctx.fillStyle = bgColor;
+							ctx.moveTo(width/2, height/2);
+							ctx.arc(width/2, height/2, r*radius[0], sDeg-.2, eDeg+.2);
 							ctx.closePath();
 							ctx.fill();
 														
 							sDeg = eDeg;
-							eDeg = sDeg + .04
+							eDeg = sDeg + .1
 
-							setTimeout(function(){
+							if(that.id == 1){
+								requestAnimationFrame(run);	
+							}else if(that.id > 1){
 								run();
-							}, 0)						
+							}					
 														
 						}else{
-							eDeg = sDeg + .04
-							sDeg = endDeg;
-							
-						}
-																									
+							eDeg = sDeg + .1
+							sDeg = endDeg;							
+						}																								
 					}					
 
 					run();
@@ -151,25 +170,6 @@ RingGraph.prototype.series = function(){
 		
 	})
 	
-	//填充中间没有填满的部分
-	that.pathArr.push({
-
-		fn: function(){
-
-			setTimeout(function(){
-
-				ctx.beginPath();
-				ctx.strokeStyle = bgColor;
-				ctx.fillStyle = bgColor;
-				ctx.moveTo(width/2, height/2);
-				ctx.arc(width/2, height/2, 12, 0, 2*Math.PI);
-				ctx.closePath();
-				ctx.fill();
-				
-			}, 100);
-		}
-	})
-
 	// that.pathArr.push({
 	// 	fn: function(){
 
