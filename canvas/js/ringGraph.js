@@ -8,25 +8,27 @@ function RingGraph(container, options){
 	};
 
 	this.options = Object.assign(options, defaults);
-	this.canvas = {};
-	this.pathArr = [];
+	this.canvas = {};	
 	this.events = [];
 	this.id = 0;
 
 	this.init();	
 
+	var that = this;
 	window.addEventListener('resize', function(){
 
-		this.container.innerHTML = '';
-		this.init();
+		that.canvas.ctx.clearRect(0, 0, that.canvas.width, that.canvas.height);
+		that.container.removeChild(that.container.childNodes[0])
+		that.init();
 
-	}.bind(this), false);
+	}, false);
 
 }
 
 RingGraph.prototype.init = function(){
 
 	++this.id
+	this.pathArr = [];
 
 	this.initCanvas();
 
@@ -61,10 +63,6 @@ RingGraph.prototype.initCanvas = function(){
 	this.canvas.width = width;
 	this.canvas.height = height;
 	this.canvas.bgColor = bgColor;
-
-	ctx.clearRect(0, 0, width, height);
-
-	this.container.appendChild(dom);
 
 }
 RingGraph.prototype.series = function(){
@@ -296,14 +294,16 @@ RingGraph.prototype.draw = function(){
 
 	this.pathArr.forEach(function(obj){
 		obj.fn()
-	});
+	});	
+
+	this.container.appendChild(canvas.dom);
 	
 }
 RingGraph.prototype.setOption = function(){
 
 }
 
-RingGraph.prototype.addEvent = function(fn){
+RingGraph.prototype.addEvents = function(fn){
 	this.events.push(fn);
 }
 
