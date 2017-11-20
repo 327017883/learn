@@ -12,14 +12,7 @@ function RingGraph(container, options){
 	this.pathArr = [];
 	this.events = [];
 
-	this.init();
-
-	window.addEventListener('resize', function(){		
-
-		this.container.innerHTML = ''
-		this.init();
-
-	}.bind(this), false)
+	this.init();	
 }
 
 RingGraph.prototype.init = function(){
@@ -32,7 +25,7 @@ RingGraph.prototype.init = function(){
 
 	this.draw();
 
-	this.initEvent()	
+	//this.initEvent()	
 }
 
 RingGraph.prototype.initCanvas = function(){
@@ -88,69 +81,108 @@ RingGraph.prototype.series = function(){
 	});	
 
 	//外环圆
-
 	var total = 0;
-	var start = 0;
+	data.forEach(function(d){
+		total += d.value;
+	});
+
+	var start = 2*Math.PI*0;
+	var time = 0;	
+
+	var initDegTotal = 0;
 
 	data.forEach(function(d, i){
+	
+		var initDeg = d.value/total*2*Math.PI;
+		initDegTotal += initDeg;
+		var endDeg = initDegTotal;
+				
+		(function(start){						
 
-		total += d.value;
-		
-		that.pathArr.push({
+			var sDeg = start;
+			var eDeg = sDeg + .04
 
-			fn: function(){
+			that.pathArr.push({
 
-					var startDeg = start;
-					var endDeg = start + 2*Math.PI*d.value/total;
-
-					ctx.beginPath();
-
-					for(; startDeg < endDeg; ){
-
-						startDeg += 0.1;
-						ctx.strokeStyle = colors[i]
-						ctx.fillStyle = colors[i]
-						ctx.moveTo(width/2, height/2);
-						ctx.arc(width/2, height/2, r*radius[1], start, startDeg);
-						ctx.closePath();					
-						ctx.fill();
+				fn: function(){
 						
-					}
+					function run(){					
 
-					start += 2*Math.PI*d.value/total;
+						if(eDeg < endDeg){
+
+							ctx.beginPath();
+							ctx.strokeStyle = colors[i]
+							ctx.fillStyle = colors[i]
+							ctx.moveTo(width/2, height/2);				
+							ctx.arc(width/2, height/2, r*radius[1], sDeg, eDeg+.04);
+							ctx.closePath();					
+							ctx.fill();
+
+							ctx.beginPath();
+							ctx.strokeStyle = bgColor;
+							ctx.fillStyle = bgColor;
+							ctx.moveTo(width/2, height/2);
+							ctx.arc(width/2, height/2, r*radius[0], sDeg-.06, eDeg+.08);
+							ctx.closePath();
+							ctx.fill();
+														
+							sDeg = eDeg;
+							eDeg = sDeg + .04
+
+							setTimeout(function(){
+								run();
+							}, 0)						
+														
+						}else{
+							eDeg = sDeg + .04
+							sDeg = endDeg;
+							
+						}
+																									
+					}					
+
+					run();
+					
 				}
-			});
+			});	
+		})(start)
+
+		start = endDeg;
+		
 	})
 	
-
-	//内圆
+	//填充中间没有填满的部分
 	that.pathArr.push({
+
 		fn: function(){
 
-			ctx.beginPath();	
-			ctx.arc(width/2, height/2, r*radius[0], 0, 2*Math.PI);
-			ctx.strokeStyle = bgColor;
-			ctx.fillStyle = bgColor;
-			ctx.stroke();
-			ctx.fill();
-			ctx.closePath();
-		}
-	});
-		
+			setTimeout(function(){
 
-	that.pathArr.push({
-		fn: function(){
-
-			ctx.beginPath();
-			var txt = options.series.name;
-			ctx.textBaseline = "middle";
-			ctx.font = "30px Microsoft Yahei";
-			ctx.textAlign = 'center';
-			ctx.fillStyle = '#404040';
-			ctx.fillText(txt, width/2, height/2);
-			ctx.closePath();
+				ctx.beginPath();
+				ctx.strokeStyle = bgColor;
+				ctx.fillStyle = bgColor;
+				ctx.moveTo(width/2, height/2);
+				ctx.arc(width/2, height/2, 12, 0, 2*Math.PI);
+				ctx.closePath();
+				ctx.fill();
+				
+			}, 100);
 		}
-	});	
+	})
+
+	// that.pathArr.push({
+	// 	fn: function(){
+
+	// 		ctx.beginPath();
+	// 		var txt = options.series.name;
+	// 		ctx.textBaseline = "middle";
+	// 		ctx.font = "30px Microsoft Yahei";
+	// 		ctx.textAlign = 'center';
+	// 		ctx.fillStyle = '#404040';
+	// 		ctx.fillText(txt, width/2, height/2);
+	// 		ctx.closePath();
+	// 	}
+	// });	
 }
 
 RingGraph.prototype.legend = function(){
@@ -189,10 +221,11 @@ RingGraph.prototype.legend = function(){
 
 				ctx.fill();
 				ctx.closePath();
+
 			},
 			type: 'txt',
 			styles: {
-				fontSize: 20,
+				fontSize: 15,
 				text: txt,
 				x: sX,
 				y: (sY+rH)*i+ sY,
@@ -385,3 +418,8 @@ String.prototype.colorRgb = function(){
           return sColor;    
      }
 };
+
+function easeOut(t, b, c, d) {
+    return -c *(t /= d)*(t-2) + b;
+}
+function Linear(t, b, c, d) { return c*t/d + b; }
