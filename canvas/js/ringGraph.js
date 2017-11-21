@@ -16,14 +16,13 @@
 
 		this.init();	
 
-		var that = this;
 		window.addEventListener('resize', function(){
 
-			that.canvas.ctx.clearRect(0, 0, that.canvas.width, that.canvas.height);
-			that.container.removeChild(that.container.childNodes[0])
-			that.init();
+			this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			this.container.removeChild(this.container.childNodes[0])
+			this.init();
 
-		}, false);
+		}.bind(this), false);
 
 	}
 
@@ -39,9 +38,15 @@
 
 		this.initCanvas();
 
-		this.series();
+		var options = this.options;
 
-		this.legend();	
+		if(options.legend) {
+			this.legend();
+		}
+
+		if(options.series) {
+			this.series();		
+		}
 
 		this.draw();
 
