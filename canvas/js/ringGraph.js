@@ -327,41 +327,18 @@
 			}					
 		});
 
-		function iterator(tasks) {
+		function eachOfSeries(tasks, callback){
 
-			var i = -1;
-			var len = tasks.length;
-			return function next() {
-			    return ++i < len ? {value: tasks[i], key: i} : null;
-			} 
-		}
+	        function run () {
 
-		function eachOfSeries(tasks, iteratee){
-
-	        var nextElem = iterator(tasks);
-	        var done = false;
-	        var running = 0;
-
-	        function iterateeCallback() {
-
-	            running -= 1;            
-	            replenish();
-	           
-	        }
-
-	        function replenish () {
-	        	
-	            while (running < 1 && !done) {
-	                var elem = nextElem();
-	                if (elem === null) {
+	                var fn = tasks.shift();
+	                if (!fn) {
 	                    return;
 	                }
-	                running += 1;
-	                iteratee(elem.value, iterateeCallback);
-	            }
+	                callback(fn, run);
 	        }
 
-	        replenish();
+	        run();
 		}	
 
 		function series(tasks){
