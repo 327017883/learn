@@ -50,7 +50,7 @@
 
 		this.draw();
 
-		this.initEvent()	
+		//this.initEvent()	
 	}
 
 	RingGraph.prototype.initCanvas = function(){
@@ -75,7 +75,7 @@
 		this.canvas.width = width;
 		this.canvas.height = height;
 		this.canvas.bgColor = bgColor;
-
+		this.container.appendChild(dom);
 	}
 	RingGraph.prototype.series = function(){
 
@@ -113,7 +113,6 @@
 		var start = new jsExp('2 * ' + Math.PI + ' * 0').val;
 
 		var initDegTotal = 0;
-		var eDegArr = [];
 
 		data.forEach(function(d, i){
 					
@@ -123,14 +122,12 @@
 			var endDeg = initDegTotal;
 					
 			(function(start){						
-
-				eDegArr[i] = start;
 				
 				that.pathArr.push({
 
-					fn: function(){
+					fn: function(next){
 																	
-						var sDeg = eDegArr[i];
+						var sDeg = start;
 						var eDeg = new jsExp(sDeg + ' + .1').val;					
 						run();
 
@@ -173,31 +170,36 @@
 															
 							}else{
 								eDeg = new jsExp(sDeg + ' + .1').val
-								sDeg = endDeg;							
+								sDeg = endDeg;
+
+								next && next();						
 							}																													
 						}
 						
-					}
+					},
+					animate: true
 				});	
 			})(start)
 
 			start = endDeg;
 			
 		})
-		
-		// that.pathArr.push({
-		// 	fn: function(){
+		/*
+			that.pathArr.push({
+				fn: function(){
 
-		// 		ctx.beginPath();
-		// 		var txt = options.series.name;
-		// 		ctx.textBaseline = "middle";
-		// 		ctx.font = "30px Microsoft Yahei";
-		// 		ctx.textAlign = 'center';
-		// 		ctx.fillStyle = '#404040';
-		// 		ctx.fillText(txt, width/2, height/2);
-		// 		ctx.closePath();
-		// 	}
-		// });	
+					ctx.beginPath();
+					var txt = options.series.name;
+					ctx.textBaseline = "middle";
+					ctx.font = "30px Microsoft Yahei";
+					ctx.textAlign = 'center';
+					ctx.fillStyle = '#404040';
+					ctx.fillText(txt, width/2, height/2);
+					ctx.closePath();
+				}
+			});
+		*/
+
 	}
 
 	RingGraph.prototype.legend = function(){
@@ -309,11 +311,67 @@
 		canvas.ctx.fillStyle = canvas.bgColor;
 		canvas.ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		this.pathArr.forEach(function(obj){
-			obj.fn()
-		});	
+		this.startFn();					
+	}
+	RingGraph.prototype.startFn = function(){
 
-		this.container.appendChild(canvas.dom);	
+		var aniArr = [];
+
+		this.pathArr.forEach(function(obj){
+			if(obj.animate){
+				aniArr.push(function(next){
+					obj.fn(next);
+				})
+			}else{
+				obj.fn()
+			}					
+		});
+
+		function iterator(tasks) {
+
+			var i = -1;
+			var len = tasks.length;
+			return function next() {
+			    return ++i < len ? {value: tasks[i], key: i} : null;
+			} 
+		}
+
+		function eachOfSeries(tasks, iteratee){
+
+	        var nextElem = iterator(tasks);
+	        var done = false;
+	        var running = 0;
+
+	        function iterateeCallback() {
+
+	            running -= 1;            
+	            replenish();
+	           
+	        }
+
+	        function replenish () {
+	        	
+	            while (running < 1 && !done) {
+	                var elem = nextElem();
+	                if (elem === null) {
+	                    return;
+	                }
+	                running += 1;
+	                iteratee(elem.value, iterateeCallback);
+	            }
+	        }
+
+	        replenish();
+		}	
+
+		function series(tasks){
+
+			eachOfSeries(tasks, function (task, callback) {
+		        task(callback);
+		    });
+		}
+
+		series(aniArr);
 		
 	}
 	RingGraph.prototype.setOption = function(){
