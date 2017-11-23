@@ -26,7 +26,9 @@
 
 	}
 
-	RingGraph.prototype.init = function(){
+	var RinPro = RingGraph.prototype;
+
+	RinPro.init = function(){
 		
 		this.pathArr = [];
 
@@ -49,11 +51,9 @@
 		}
 
 		this.draw();
-
-		this.initEvent()	
 	}
 
-	RingGraph.prototype.initCanvas = function(){
+	RinPro.initCanvas = function(){
 
 		var dom = document.createElement('canvas');
 		var ctx =  dom.getContext('2d');
@@ -70,14 +70,13 @@
 		dom.width = width;
 		dom.height = height;
 
-		this.canvas.dom = dom;
 		this.canvas.ctx = ctx;
 		this.canvas.width = width;
 		this.canvas.height = height;
 		this.canvas.bgColor = bgColor;
 		this.container.appendChild(dom);
 	}
-	RingGraph.prototype.series = function(){
+	RinPro.series = function(){
 
 		var canvas = this.canvas;
 		var options = this.options;
@@ -111,13 +110,13 @@
 		});
 
 		//画圆初始角度
-		var deg = 10;
+		var deg = 0;
 
 		var start = end = new jsExp(Math.PI + ' / 180 * ' + deg).val;
 
-		data.forEach(function(d, i){
+		data.forEach(function(item, i){
 					
-			var initDeg = new jsExp(d.value + ' / ' + total + ' * 2 * ' + Math.PI).val;
+			var initDeg = new jsExp(item.value + ' / ' + total + ' * 2 * ' + Math.PI).val;
 
 			end = new jsExp(end + ' + ' + initDeg).val; 
 			var t = 1, d = 3, speed = 1;				
@@ -126,7 +125,7 @@
 				
 				that.pathArr.push({
 
-					fn: function(next){																	
+					fn: function(next, clb){																	
 						var sDeg = s;
 						var eDeg;
 						
@@ -143,14 +142,30 @@
 								ctx.lineWidth = 1;
 								ctx.strokeStyle = colors[i]
 								ctx.fillStyle = colors[i]								
-								ctx.moveTo(wMid, hMid);				
+								ctx.moveTo(wMid, hMid);	
 								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[1]).val, sDeg, eDeg);
+
+								if(clb){
+
+									 clb({
+									 	type: 'graph',
+									 	wMid: wMid,
+									 	hMid: hMid,
+									 	sDeg: sDeg,
+									 	eDeg: eDeg,
+									 	r: new jsExp(r + ' * ' + radius[1]).val									 	
+									 });
+								}																	
+
 								ctx.closePath();					
 								ctx.fill();
-								ctx.stroke();
+								ctx.stroke();								
 
 								ctx.beginPath();
 								ctx.lineWidth = 2;
+								ctx.shadowColor = "rgba(0, 0, 0, 0)"
+								ctx.shadowOffsetX = 0;
+								ctx.shadowOffsetY = 0;
 								ctx.strokeStyle = bgColor
 								ctx.fillStyle = bgColor;
 								ctx.moveTo(wMid, hMid);
@@ -158,6 +173,8 @@
 								ctx.closePath();
 								ctx.fill();
 								ctx.stroke();
+
+								clb && clb();
 
 								sDeg = eDeg;						
 								
@@ -168,6 +185,8 @@
 								}					
 															
 							}else{
+								t = 1;
+								d = 1;
 								next && next();						
 							}																													
 						}
@@ -177,26 +196,10 @@
 				});	
 			})(start, end)
 			start = end;
-		})
-		/*
-			that.pathArr.push({
-				fn: function(){
-
-					ctx.beginPath();
-					var txt = options.series.name;
-					ctx.textBaseline = "middle";
-					ctx.font = "30px Microsoft Yahei";
-					ctx.textAlign = 'center';
-					ctx.fillStyle = '#404040';
-					ctx.fillText(txt, width/2, height/2);
-					ctx.closePath();
-				}
-			});
-		*/
-
+		});
 	}
 
-	RingGraph.prototype.legend = function(){
+	RinPro.legend = function(){
 
 		var that = this;
 		var legend = this.options.legend;
@@ -221,7 +224,16 @@
 					ctx.font = '14px Microsoft Yahei';
 					ctx.fillStyle = colors[i];				
 
-					callback && callback()
+					callback && callback({
+						styles: {
+							fontSize: 15,
+							text: txt,
+							x: sX,
+							y: (sY+rH)*i+ sY,
+							w: sX+rW*2,
+							color: colors[i]
+						}
+					})
 
 					ctx.fillText(txt, sX+rW*2, (sY+rH)*i+ sY-2);			
 
@@ -232,106 +244,72 @@
 
 					ctx.fill();
 					ctx.closePath();
-
-				},
-				type: 'txt',
-				styles: {
-					fontSize: 15,
-					text: txt,
-					x: sX,
-					y: (sY+rH)*i+ sY,
-					w: sX+rW*2,
-					color: colors[i]
-				}
-			})		
-		});
-		
-	}
-
-	RingGraph.prototype.initEvent = function(){
-
-		var that = this;
-
-		var canvas = that.canvas;
-		var dom = canvas.dom;
-
-		dom.addEventListener("mousemove", function(e){ 
-
-			var isOver = 0;
-			var point = getCanvasPoint(e.pageX, e.pageY);	
-
-			var ctx = canvas.ctx;
-
-			ctx.clearRect(0, 0, canvas.width, canvas.height);		
-
-			var arr = that.pathArr;
-
-			that.pathArr.forEach(function(obj, i){			
-				
-				obj.fn();
-
-				if(obj.type == 'txt'){				
-
-					let styles = obj.styles;
-					let color = ctx.fillStyle.colorRgb();
-
-					if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
-						isOver++;		
-
-						obj.fn(function(){
-							ctx.fillStyle = '#000';
-						});
-					}
-				}else{
-					if(ctx.isPointInPath(point.x, point.y)){
-						isOver++;	
-					}
 				}			
 			});	
-
-			if(isOver == 1){
-				dom.className = 'cursor';
-			}else{
-				dom.className = '';
-			}
-		}, !1);
+		});			
 	}
 
-	RingGraph.prototype.draw = function(){
+	RinPro.draw = function(){
 		
+		this.clearCanvas();
+
+		this.startFn();					
+	}
+	RinPro.clearCanvas = function(){
+
 		var canvas = this.canvas;
 		canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);		
 
 		canvas.ctx.fillStyle = canvas.bgColor;
 		canvas.ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-		this.startFn();					
 	}
-	RingGraph.prototype.startFn = function(){
 
-		var aniArr = [];
+	RinPro.startFn = function(){
+
 		var that = this;
+
+		var aniArr = that.paintLegend();
+
+		that.asyncFn(aniArr, function(){
+			that.canvasEvent();
+		});		
+	}
+
+	RinPro.paintLegend = function(legendClb, seriesClb){
+
+		var that = this;
+		var aniArr = [];		
 
 		that.pathArr.forEach(function(obj){
 			if(obj.animate){
-				aniArr.push(function(next){
-					obj.fn(next);
+				aniArr.push(function(next){					
+					obj.fn(next, seriesClb);
 				})
 			}else{
-				obj.fn()
+				obj.fn(legendClb)
 			}					
 		});
 
-		// aniArr.push(function(){
-		// 	that.initEvent()
-		// });
+		return aniArr;
+	}
 
-		function eachOfSeries(tasks, callback){
+	RinPro.asyncFn = function(tasks, done){
+
+		if(Object.prototype.toString.call(tasks) !== '[object Array]'){
+			return;
+		}
+
+		eachOfSeries(tasks, function (task, clb) {
+	        task(clb);
+	    });
+
+	    function eachOfSeries(tasks, callback){
 
 	        function run () {
 
-	                var fn = tasks.shift();
+	                var fn = tasks.shift();		                
 	                if (!fn) {
+	                	done && done();
 	                    return;
 	                }
 	                callback(fn, run);
@@ -339,23 +317,72 @@
 
 	        run();
 		}	
-
-		function series(tasks){
-
-			eachOfSeries(tasks, function (task, callback) {
-		        task(callback);
-		    });
-		}
-
-		series(aniArr);
-		
-	}
-	RingGraph.prototype.setOption = function(){
-
 	}
 
-	RingGraph.prototype.addEvents = function(fn){
-		this.events.push(fn);
+	RinPro.canvasEvent = function(){
+
+		var that = this;
+		var canvas = that.canvas;
+		var events = that.events;
+
+		var point;
+
+		canvas.ctx.canvas.addEventListener('mousemove', function(e){
+
+			var isOver = 0;
+			point = getCanvasPoint(e.pageX, e.pageY);
+
+			that.clearCanvas();
+						
+			var aniArr = that.paintLegend(
+				function(o){
+
+					var styles = o.styles;
+					if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
+						isOver++;
+						console.log()
+						ctx.fillStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1,.8$2')
+
+					}
+				},
+				function(o){
+
+					if(ctx.isPointInPath(point.x, point.y)){
+						if(o){
+							isOver++;
+
+							ctx.strokeStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1, 0$2');
+							ctx.fillStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1,.6$2');
+							
+					
+							ctx.moveTo(o.wMid, o.hMid);
+							ctx.arc(o.wMid, o.hMid, o.r + 8, o.sDeg, o.eDeg);
+
+							// ctx.beginPath();
+							// ctx.textBaseline = "middle";
+							// ctx.font = "14px Microsoft Yahei";
+							// ctx.textAlign = 'center';
+							// ctx.fillStyle = '#404040';
+							// ctx.fillText(o.name, o.wMid, o.hMid);
+							// ctx.closePath();
+							
+						}else{
+							isOver--;
+						}
+						
+					}
+				}
+			);
+
+			that.asyncFn(aniArr, function(){
+				if(isOver == 1){
+					document.body.className = 'cursor';
+				}else{
+					document.body.className = '';
+				}
+			});	
+
+		}, false);
 	}
 
 	function getStyle(element, attr){
@@ -464,7 +491,7 @@
 	          for(var i=1; i<7; i+=2){
 	               sColorChange.push(parseInt("0x"+sColor.slice(i,i+2)));    
 	          }
-	          return "RGB(" + sColorChange.join(",") + ")";
+	          return "rgba(" + sColorChange.join(",") + ")";
 	     }else{
 	          return sColor;    
 	     }
