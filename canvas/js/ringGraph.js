@@ -50,7 +50,7 @@
 
 		this.draw();
 
-		//this.initEvent()	
+		this.initEvent()	
 	}
 
 	RingGraph.prototype.initCanvas = function(){
@@ -110,57 +110,56 @@
 			total += d.value;
 		});
 
-		var start = new jsExp('2 * ' + Math.PI + ' * 0').val;
+		//画圆初始角度
+		var deg = 10;
 
-		var initDegTotal = 0;
+		var start = end = new jsExp(Math.PI + ' / 180 * ' + deg).val;
 
 		data.forEach(function(d, i){
 					
-			var initDeg = new jsExp(d.value + ' / ' + total + ' * 2 * ' + Math.PI).val;					
+			var initDeg = new jsExp(d.value + ' / ' + total + ' * 2 * ' + Math.PI).val;
 
-			initDegTotal += initDeg;
-			var endDeg = initDegTotal;
-					
-			(function(start){						
+			end = new jsExp(end + ' + ' + initDeg).val; 
+			var t = 1, d = 3, speed = 1;				
+			
+			(function(s, e){						
 				
 				that.pathArr.push({
 
-					fn: function(next){
-																	
-						var sDeg = start;
-						var eDeg = new jsExp(sDeg + ' + .1').val;					
+					fn: function(next){																	
+						var sDeg = s;
+						var eDeg;
+						
 						run();
 
 						function run(){					
 							
-							if(eDeg < endDeg){
-								
+							eDeg = easeOut(t, s, e - s, d);
+							if(t <= d){
+
+								t += speed;
+
 								ctx.beginPath();
+								ctx.lineWidth = 1;
 								ctx.strokeStyle = colors[i]
-								ctx.fillStyle = colors[i]
+								ctx.fillStyle = colors[i]								
 								ctx.moveTo(wMid, hMid);				
-								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[1]).val, sDeg, new jsExp(eDeg + ' + ' + .1).val);
+								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[1]).val, sDeg, eDeg);
 								ctx.closePath();					
 								ctx.fill();
+								ctx.stroke();
 
 								ctx.beginPath();
-								ctx.strokeStyle = bgColor;
+								ctx.lineWidth = 2;
+								ctx.strokeStyle = bgColor
 								ctx.fillStyle = bgColor;
 								ctx.moveTo(wMid, hMid);
-								ctx.arc(wMid, hMid, 10, 0, new jsExp('2 * ' + Math.PI).val);
+								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[0]).val, sDeg, eDeg);
 								ctx.closePath();
 								ctx.fill();
+								ctx.stroke();
 
-								ctx.beginPath();
-								ctx.strokeStyle = bgColor;
-								ctx.fillStyle = bgColor;
-								ctx.moveTo(wMid, hMid);
-								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[0]).val, new jsExp(sDeg + ' - .2').val, new jsExp(eDeg + ' + .2').val);
-								ctx.closePath();
-								ctx.fill();
-															
-								sDeg = eDeg;
-								eDeg = new jsExp(sDeg + ' + .1').val
+								sDeg = eDeg;						
 								
 								if(that.id == 1){
 									requestAnimationFrame(run);	
@@ -169,9 +168,6 @@
 								}					
 															
 							}else{
-								eDeg = new jsExp(sDeg + ' + .1').val
-								sDeg = endDeg;
-
 								next && next();						
 							}																													
 						}
@@ -179,10 +175,8 @@
 					},
 					animate: true
 				});	
-			})(start)
-
-			start = endDeg;
-			
+			})(start, end)
+			start = end;
 		})
 		/*
 			that.pathArr.push({
@@ -316,8 +310,9 @@
 	RingGraph.prototype.startFn = function(){
 
 		var aniArr = [];
+		var that = this;
 
-		this.pathArr.forEach(function(obj){
+		that.pathArr.forEach(function(obj){
 			if(obj.animate){
 				aniArr.push(function(next){
 					obj.fn(next);
@@ -326,6 +321,10 @@
 				obj.fn()
 			}					
 		});
+
+		// aniArr.push(function(){
+		// 	that.initEvent()
+		// });
 
 		function eachOfSeries(tasks, callback){
 
