@@ -17,6 +17,21 @@
         margin: 0 auto;
 	}
 
+    .ctx-tooltip{
+        position: fixed;
+        padding: 10px;
+        display: inline-block;
+        color: #fff;
+        font-size: 14px;
+        z-index: 100;
+        background: rgba(0, 0, 0, .6);
+        border-radius: 5px;
+        opacity: 0;        
+    }
+    .ctx-tooltip.show{
+        opacity: 1;
+    }
+
 </style>
 <body>
 
@@ -30,8 +45,7 @@ var c = document.getElementById('container');
 new RingGraph(c, {
 
 	tooltip: {
-        trigger: 'item',
-        formatter: "{a} <br/>{b}: {c} ({d}%)"
+        formatter: "{seriesName} <br/>{dataName}：{value} ({percent}%)"
     },
     legend: {
         orient: 'vertical',

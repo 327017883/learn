@@ -49,6 +49,9 @@
 		if(options.series) {
 			this.series();		
 		}
+		if(options.tooltip){
+			this.tooltip();
+		}
 
 		this.draw();
 	}
@@ -119,31 +122,31 @@
 			var initDeg = new jsExp(item.value + ' / ' + total + ' * 2 * ' + Math.PI).val;
 
 			end = new jsExp(end + ' + ' + initDeg).val; 
-			var t = 1, d = 3, speed = 1;				
+			var t = 1, d = 3, speed = 1;
+			var lineWidth = parseInt((radius[1] - radius[0])*r);				
 			
-			(function(s, e){						
+			(function(s, e, i, name, value){						
 				
 				that.pathArr.push({
 
 					fn: function(next, clb){																	
 						var sDeg = s;
 						var eDeg;
-						
+
 						run();
 
 						function run(){					
 							
 							eDeg = easeOut(t, s, e - s, d);
+
 							if(t <= d){
 
 								t += speed;
 
 								ctx.beginPath();
-								ctx.lineWidth = 1;
+								ctx.lineWidth = lineWidth;
 								ctx.strokeStyle = colors[i]
-								ctx.fillStyle = colors[i]								
-								ctx.moveTo(wMid, hMid);	
-								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[1]).val, sDeg, eDeg);
+								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[0]).val, sDeg, eDeg + 0.009);
 
 								if(clb){
 
@@ -153,48 +156,32 @@
 									 	hMid: hMid,
 									 	sDeg: sDeg,
 									 	eDeg: eDeg,
-									 	r: new jsExp(r + ' * ' + radius[1]).val									 	
+									 	percent: value/total,
+									 	value: value,
+									 	r: new jsExp(r + ' * ' + radius[0]).val,
+									 	lineWidth: lineWidth,
+									 	strokeStyle: colors[i],
+									 	name: name								 	
 									 });
 								}																	
-
-								ctx.closePath();					
-								ctx.fill();
-								ctx.stroke();								
-
-								ctx.beginPath();
-								ctx.lineWidth = 2;
-								ctx.shadowColor = "rgba(0, 0, 0, 0)"
-								ctx.shadowOffsetX = 0;
-								ctx.shadowOffsetY = 0;
-								ctx.strokeStyle = bgColor
-								ctx.fillStyle = bgColor;
-								ctx.moveTo(wMid, hMid);
-								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[0]).val, sDeg, eDeg);
-								ctx.closePath();
-								ctx.fill();
 								ctx.stroke();
-
-								clb && clb();
-
 								sDeg = eDeg;						
 								
 								if(that.id == 1){
 									requestAnimationFrame(run);	
 								}else if(that.id > 1){
 									run();
-								}					
-															
+								}																			
 							}else{
 								t = 1;
 								d = 1;
 								next && next();						
 							}																													
-						}
-						
+						}						
 					},
 					animate: true
 				});	
-			})(start, end)
+			})(start, end, i, item.name, item.value)
 			start = end;
 		});
 	}
@@ -243,10 +230,37 @@
 					ctx.lineTo(sX, (sX + rW)*(i+1));
 
 					ctx.fill();
-					ctx.closePath();
 				}			
 			});	
 		});			
+	}
+	RinPro.tooltip = function(){
+
+		var div = document.createElement('div');
+		div.className = 'ctx-tooltip';
+
+		this.tooltip = div;
+		document.body.appendChild(div)	
+	}
+	RinPro.formatter = function(o){
+
+		var html = this.options.tooltip.formatter;
+		html = html.replace(/\s+/g, '')
+
+		if(html.indexOf("{seriesName}") != -1){
+			html = html.replace('{seriesName}', this.options.series.name)
+		}
+		if(html.indexOf("{dataName}") != -1){
+			html = html.replace('{dataName}', o.name)
+		}
+		if(html.indexOf("{value}") != -1){
+			html = html.replace('{value}', o.value)
+		}
+		if(html.indexOf("{percent}") != -1){
+			html = html.replace('{percent}', (o.percent).toFixed(2)*100)
+		}
+
+		return html;
 	}
 
 	RinPro.draw = function(){
@@ -323,7 +337,7 @@
 
 		var that = this;
 		var canvas = that.canvas;
-		var events = that.events;
+		var events = that.events;		
 
 		var point;
 
@@ -340,34 +354,40 @@
 					var styles = o.styles;
 					if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
 						isOver++;
-						console.log()
 						ctx.fillStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1,.8$2')
 
 					}
 				},
 				function(o){
 
-					if(ctx.isPointInPath(point.x, point.y)){
+					if(ctx.isPointInStroke(point.x, point.y)){
 						if(o){
+
+							//设置透明度
+							//ctx.strokeStyle = (o.strokeStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1, 0.5$2');
+
+							//改变线宽
+							ctx.lineWidth = o.lineWidth + 10;
+
+							//显示文字
+							ctx.textBaseline = "middle";
+							ctx.font = "bold 18px Microsoft Yahei";
+							ctx.textAlign = 'center';
+							ctx.fillStyle = '#404040';
+							ctx.fillText(o.name, o.wMid, o.hMid);
+
 							isOver++;
 
-							ctx.strokeStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1, 0$2');
-							ctx.fillStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1,.6$2');
-							
-					
-							ctx.moveTo(o.wMid, o.hMid);
-							ctx.arc(o.wMid, o.hMid, o.r + 8, o.sDeg, o.eDeg);
+							var html = that.formatter({
+								name: o.name,
+								value: o.value,
+								percent: o.percent
+							});
 
-							// ctx.beginPath();
-							// ctx.textBaseline = "middle";
-							// ctx.font = "14px Microsoft Yahei";
-							// ctx.textAlign = 'center';
-							// ctx.fillStyle = '#404040';
-							// ctx.fillText(o.name, o.wMid, o.hMid);
-							// ctx.closePath();
-							
-						}else{
-							isOver--;
+							that.tooltip.innerHTML = html;
+							that.tooltip.setAttribute('class', 'ctx-tooltip show');
+							that.tooltip.style.cssText = "left: "+ (point.x + ctx.canvas.offsetLeft + 20) +"px; top: "+ (point.y+ctx.canvas.offsetTop + 20) +"px;";
+
 						}
 						
 					}
@@ -379,6 +399,8 @@
 					document.body.className = 'cursor';
 				}else{
 					document.body.className = '';
+					that.tooltip.innerHTML = '';
+					that.tooltip.setAttribute('class', 'ctx-tooltip');	
 				}
 			});	
 
@@ -402,29 +424,6 @@
 	    //return  NumberMode == 'float'? parseFloat(target) : parseInt(target);
 	}
 
-	function addEvent(elem, type, handler){
-
-	    if(elem.addEventListener){
-
-	        addEvent = function(elem, type, handler){
-
-	            elem.addEventListener(type, handler, false);
-
-	        }
-
-	    }else if(elem.attachEvent){
-
-	        addEvent = function(elem, type, handler){
-
-	            elem.attachEvent("on"+type, handler);
-
-	        }
-
-	    }
-
-	    return addEvent(elem,type,handler);
-
-	} 
 	function getRandomColor(){
 
 		return "#"+("00000"+((Math.random()*16777215+0.5)>>0).toString(16)).slice(-6);
