@@ -50,7 +50,7 @@
 			this.series();		
 		}
 		if(options.tooltip){
-			this.tooltip();
+			this.tooltipFn();
 		}
 
 		this.draw();
@@ -234,7 +234,7 @@
 			});	
 		});			
 	}
-	RinPro.tooltip = function(){
+	RinPro.tooltipFn = function(){
 
 		var div = document.createElement('div');
 		div.className = 'ctx-tooltip';
