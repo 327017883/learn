@@ -94,17 +94,20 @@
 		var wMid = new jsExp(width + ' / 2').val; 
 		var hMid = new jsExp(height + ' / 2').val;
 
-		var r;
-		if(width > height){
-			r = hMid;
-			
-		}else{
-			r = wMid;
-		}
-
 		var radius = options.series.radius.map(function(e){
 			return new jsExp(parseFloat(e) + ' / 100').val;
 		});	
+
+		width = width*radius[1]
+		height = height*radius[1]
+
+		var r;
+		if(width > height){
+			r = height/2;
+			
+		}else{
+			r = width/2;
+		}	
 
 		//外环圆
 		var total = 0;
@@ -123,7 +126,7 @@
 
 			end = new jsExp(end + ' + ' + initDeg).val; 
 			var t = 1, d = 3, speed = 1;
-			var lineWidth = parseInt((radius[1] - radius[0])*r);				
+			var lineWidth = parseInt(new jsExp( r + ' - ' + r + ' * ' + radius[0]).val);				
 			
 			(function(s, e, i, name, value){						
 				
@@ -146,7 +149,7 @@
 								ctx.beginPath();
 								ctx.lineWidth = lineWidth;
 								ctx.strokeStyle = colors[i]
-								ctx.arc(wMid, hMid, new jsExp(r + ' * ' + radius[0]).val, sDeg, eDeg + 0.009);
+								ctx.arc(wMid, hMid, new jsExp(r + ' - ' + lineWidth + ' / 2').val, sDeg, eDeg + 0.01);
 
 								if(clb){
 
@@ -164,7 +167,8 @@
 									 	name: name								 	
 									 });
 								}																	
-								ctx.stroke();
+								ctx.stroke();																			
+
 								sDeg = eDeg;						
 								
 								if(that.id == 1){
@@ -174,7 +178,8 @@
 								}																			
 							}else{
 								t = 1;
-								d = 1;
+								d = 1;								
+
 								next && next();						
 							}																													
 						}						
@@ -218,7 +223,8 @@
 							x: sX,
 							y: (sY+rH)*i+ sY,
 							w: sX+rW*2,
-							color: colors[i]
+							color: colors[i],
+							index: i
 						}
 					})
 
@@ -282,14 +288,14 @@
 
 		var that = this;
 
-		var aniArr = that.paintLegend();
+		var aniArr = that.paint();
 
 		that.asyncFn(aniArr, function(){
 			that.canvasEvent();
 		});		
 	}
 
-	RinPro.paintLegend = function(legendClb, seriesClb){
+	RinPro.paint = function(legendClb, seriesClb){
 
 		var that = this;
 		var aniArr = [];		
@@ -348,35 +354,27 @@
 
 			that.clearCanvas();
 						
-			var aniArr = that.paintLegend(
+			var aniArr = that.paint(
+
 				function(o){
 
 					var styles = o.styles;
 					if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
 						isOver++;
 						ctx.fillStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1,.8$2')
-
 					}
 				},
 				function(o){
 
 					if(ctx.isPointInStroke(point.x, point.y)){
-						if(o){
+						
+							isOver++;
 
 							//设置透明度
 							//ctx.strokeStyle = (o.strokeStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1, 0.5$2');
 
 							//改变线宽
-							ctx.lineWidth = o.lineWidth + 10;
-
-							//显示文字
-							ctx.textBaseline = "middle";
-							ctx.font = "bold 18px Microsoft Yahei";
-							ctx.textAlign = 'center';
-							ctx.fillStyle = '#404040';
-							ctx.fillText(o.name, o.wMid, o.hMid);
-
-							isOver++;
+							ctx.lineWidth = o.lineWidth + 10;														
 
 							var html = that.formatter({
 								name: o.name,
@@ -384,12 +382,16 @@
 								percent: o.percent
 							});
 
+							//显示文字
+							ctx.textBaseline = "middle";
+							ctx.font = "bold 18px Microsoft Yahei";
+							ctx.textAlign = 'center';
+							ctx.fillStyle = o.strokeStyle.colorRgb();
+							ctx.fillText(o.name, o.wMid, o.hMid);
+
 							that.tooltip.innerHTML = html;
 							that.tooltip.setAttribute('class', 'ctx-tooltip show');
-							that.tooltip.style.cssText = "left: "+ (point.x + ctx.canvas.offsetLeft + 20) +"px; top: "+ (point.y+ctx.canvas.offsetTop + 20) +"px;";
-
-						}
-						
+							that.tooltip.style.cssText = "left: "+ (point.x + ctx.canvas.offsetLeft + 20) +"px; top: "+ (point.y+ctx.canvas.offsetTop + 20) +"px;";												
 					}
 				}
 			);
@@ -405,6 +407,22 @@
 			});	
 
 		}, false);
+
+		canvas.ctx.canvas.addEventListener('mouseup', function(e){
+
+			point = getCanvasPoint(e.pageX, e.pageY);
+
+			var aniArr = that.paint(
+
+				function(o){
+
+					var styles = o.styles;
+					if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
+						alert(o.styles.text)
+					}
+				}
+			);
+		}, false)
 	}
 
 	function getStyle(element, attr){
