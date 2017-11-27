@@ -349,7 +349,13 @@
 
 		canvas.ctx.canvas.addEventListener('mousemove', function(e){
 
-			var isOver = 0;
+			var isOver = {
+				flag: 0,
+				o:{
+					name: '',
+					strokeStyle: ''
+				}
+			};
 			point = getCanvasPoint(e.pageX, e.pageY);
 
 			that.clearCanvas();
@@ -360,7 +366,7 @@
 
 					var styles = o.styles;
 					if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
-						isOver++;
+						isOver.flag++;
 						ctx.fillStyle = (ctx.fillStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1,.8$2')
 					}
 				},
@@ -368,26 +374,26 @@
 
 					if(ctx.isPointInStroke(point.x, point.y)){
 						
-							isOver++;
+							isOver.flag++;
+							isOver.o = {
+								name: o.name,
+								strokeStyle: o.strokeStyle,
+								wMid: o.wMid,
+								hMid: o.hMid
+
+							}
 
 							//设置透明度
 							//ctx.strokeStyle = (o.strokeStyle.colorRgb()+'').replace(/(\d+)(\))$/g, '$1, 0.5$2');
 
 							//改变线宽
 							ctx.lineWidth = o.lineWidth + 10;														
-
+							
 							var html = that.formatter({
 								name: o.name,
 								value: o.value,
 								percent: o.percent
-							});
-
-							//显示文字
-							ctx.textBaseline = "middle";
-							ctx.font = "bold 18px Microsoft Yahei";
-							ctx.textAlign = 'center';
-							ctx.fillStyle = o.strokeStyle.colorRgb();
-							ctx.fillText(o.name, o.wMid, o.hMid);
+							});												
 
 							that.tooltip.innerHTML = html;
 							that.tooltip.setAttribute('class', 'ctx-tooltip show');
@@ -397,8 +403,16 @@
 			);
 
 			that.asyncFn(aniArr, function(){
-				if(isOver == 1){
+				if(isOver.flag == 1){
 					document.body.className = 'cursor';
+
+					//显示文字
+					ctx.textBaseline = "middle";
+					ctx.font = "bold 18px Microsoft Yahei";
+					ctx.textAlign = 'center';
+					ctx.fillStyle = isOver.o.strokeStyle;
+					ctx.fillText(isOver.o.name, isOver.o.wMid, isOver.o.hMid);
+
 				}else{
 					document.body.className = '';
 					that.tooltip.innerHTML = '';
@@ -418,7 +432,7 @@
 
 					var styles = o.styles;
 					if(point.x > styles.x && point.x < styles.w + ctx.measureText(styles.text).width && point.y > styles.y && point.y < styles.y + styles.fontSize){
-						alert(o.styles.text)
+						
 					}
 				}
 			);
