@@ -33,6 +33,10 @@
 	}
 
 	function setTimeValue(arr, start, end, type){
+
+		start = parseInt(start);
+
+		end = parseInt(end);
 		for(; start <= end; start++){
 			start = start < 10 ? '0' + start : '' + start;
 			arr.push(start + type);
@@ -60,6 +64,7 @@
 			startTimeLimite: '',//开始
 			endTimeLimite: '',//截止
 			hoursRange: '',//小时时间段
+			sysTime: '', //服务器的时间
 			callBack: null
 		};		
 
@@ -67,12 +72,7 @@
 			this.defaults[key] = options[key]
 		}.bind(this));
 
-		this.initDate();		
-
-		//开始日期限制
-		if(this.defaults.startTimeLimite !== ''){
-			this.startTimeLimite();
-		}
+		this.initDate(this.defaults.sysTime);		
 
 		this.target = this.defaults.target;
 		this.idName = this.target.replace(/#/g,'');
@@ -113,47 +113,219 @@
 		this.initEvent();
 	};
 
-	t.initDate = function(){
-		var currentTime = new Date();
+	t.initDate = function(sysTime){
+
+		var _this = this;
+		var currentTime = (sysTime && new Date(sysTime) ) || new Date();
 		var curYear = currentTime.getFullYear();
+
+		var initTime;
+
+		if(this.defaults.initTime){	
+			initTime = this.defaults.initTime.match(/\d+/g);
+			this.initYear = parseInt(initTime[0]);
+			this.initMonth = parseInt(initTime[1]);
+			this.initDay = parseInt(initTime[2]);
+			this.initHour = parseInt(initTime[3] || 0);
+			this.initMinute = parseInt(initTime[4] || 0);
+			this.initSecond = parseInt(initTime[5] || 0);
+		}
+
 		this.initMinHour = 0;
 		this.initMaxHour = 23;
 		this.initMinMinute = 0;
 		this.initMaxMinute = 59;
+		this.initMinSecond = 0;
+		this.initMaxSecond = 59;
 
-		this.YAER = setTimeValue([], curYear - 10 , curYear + 5, '年');
+		this.curYear = curYear;
+		this.curMonth = currentTime.getMonth() + 1;
+		this.curDay = currentTime.getDate();
+		this.curHour = currentTime.getHours();
+		this.curMinte = currentTime.getMinutes();
+		this.curSecond = currentTime.getSeconds();		
+
+		this.YAER = setTimeValue([], curYear - 30 , curYear + 5, '年');
 		this.MONTH = setTimeValue([], 1, 12, '月');
-
-		if(this.defaults.hoursRange !== ''){
-
-			var hoursRange = this.defaults.hoursRange.match(/\d+/g);
-			this.initMinHour = parseInt(hoursRange[0]);
-			this.initMaxHour = parseInt(hoursRange[1]);
-			this.HOURS = setTimeValue([], this.initMinHour, this.initMaxHour , '时');			
-		}else{
-			this.HOURS = setTimeValue([], 0, 23, '时');
-		}
-		
+		this.HOURS = setTimeValue([], 0, 23, '时');
 		this.MINUTES = setTimeValue([], 0, 59, '分');
-		this.SECOND = setTimeValue([], 0, 59, '秒');
+		this.SECONDS = setTimeValue([], 0, 59, '秒');
+
+		this.minYear = this.minMonth = this.minDay = this.minHour = this.minMinute = this.minSecond = null;
+
+		var defaults = this.defaults;
+
+		var startArr;
+		if(defaults.startTimeLimite){
+			startArr = defaults.startTimeLimite.match(/\d+/g);
+			this.minYear = parseInt(startArr[0]);
+			this.minMonth = parseInt(startArr[1]); 
+			this.minDay = parseInt(startArr[2]); 
+			this.minHour = parseInt(startArr[3] || 0); 
+			this.minMinute = parseInt(startArr[4] || 0);
+			this.minSecond = parseInt(startArr[5] || 0);
+
+			var minIndex = 0;
+			this.YAER.forEach(function(item, index){
+				if(parseInt(item) == _this.minYear){
+					minIndex = index;
+				}
+			});
+			this.YAER.splice(0, minIndex);			
+		}
+
+		var endArr;
+		if(defaults.endTimeLimite){
+			endArr = defaults.endTimeLimite.match(/\d+/g);
+			this.maxYear = parseInt(endArr[0]);
+			this.maxMonth = parseInt(endArr[1]); 
+			this.maxDay = parseInt(endArr[2]); 
+			this.maxHour = parseInt(endArr[3] || 59); 
+			this.maxMinute = parseInt(endArr[4] || 59);
+			this.maxSecond = parseInt(endArr[5] || 59);
+
+			var maxIndex = 0;
+			this.YAER.forEach(function(item, index){
+				if(parseInt(item) == _this.maxYear){
+					maxIndex = index;
+				}
+			});
+			this.YAER.splice(maxIndex+1, this.YAER.length);	
+		}
+
+		// if(this.defaults.hoursRange !== ''){
+
+		// 	var hoursRange = this.defaults.hoursRange.match(/\d+/g);
+		// 	this.initMinHour = parseInt(hoursRange[0]);
+		// 	this.initMaxHour = parseInt(hoursRange[1]);
+		// 	this.HOURS = setTimeValue([], this.initMinHour, this.initMaxHour , '时');			
+		// }
+		
+		
 	};
 	t.initData = function (){
 
 		for(var i = 1; i <= this.nextLevel; i++){
-			this.initSecDom(i, i === 3);
+			this.initSecDom(i);
 		}
 
 	};
 
-	t.initSecDom = function (key, day){
+	t.initSecDom = function (index){
 
 		var data;
+		var _this = this;
 
-		if(day){//为天，进行判断
-			data = this.timeBranch[key].bind(this)(this.delTimeText(this.YAER[0]), this.delTimeText(this.MONTH[0]), this.defaults.startTimeLimite !== '' && this.isMinDay);
-	
-		}else{
-			data = this.timeBranch[key].bind(this)();
+		switch(index){
+			case 1:
+				this.initYearArr = data = this.timeBranch[index].bind(this)();
+				break;
+			case 2:
+				this.initMonthArr = data = this.timeBranch[index].bind(this)();
+
+				if( this.initYear == this.minYear){
+
+					this.initMonthArr = data = setTimeValue([], this.minMonth, 12, '月');
+				}
+
+				if( this.initYear == this.maxYear){	
+					var maxIndex = 0;
+					data.forEach(function(item, index){
+						if(parseInt(item) == _this.maxMonth){
+							maxIndex = index;
+						}
+					});
+					this.initMonthArr = data = data.splice(0, maxIndex+1);
+				}
+				break;
+			case 3:
+				this.initDayArr = data = this.timeBranch[index].bind(this)(this.YAER[0] , this.MONTH[0]);
+				if( this.minYear == this.initYear 
+					&& this.minMonth == this.initMonth					
+				){
+					this.initDayArr = data = data.splice(this.minDay - 1);
+				}
+				if( this.maxYear == this.initYear
+					&& this.maxMonth == this.initMonth			
+				){					
+					var maxIndex = 0;
+					data.forEach(function(item, index){
+						if(parseInt(item) == _this.maxDay){
+							maxIndex = index;
+						}
+					});
+					this.initDayArr = data = data.splice(0, maxIndex+1);
+				}
+				break;
+			case 4:
+				this.initHourArr = data = this.timeBranch[index].bind(this)();
+				if( this.minYear == this.initYear
+					&& this.minMonth == this.initMonth
+					&& this.minDay == this.initDay					
+				){
+					this.initHourArr = data = data.splice(this.minHour);
+				}
+				if( this.maxYear == this.initYear 
+					&& this.maxMonth == this.initMonth
+					&& this.maxDay == this.initDay					
+				){					
+					var maxIndex = 0;
+					data.forEach(function(item, index){
+						if(parseInt(item) == _this.maxHour){
+							maxIndex = index;
+						}
+					});
+					this.initHourArr = data = data.splice(0, maxIndex+1);
+				}
+				break;
+			case 5:
+				this.initMinuteArr = data = this.timeBranch[index].bind(this)();
+				if( this.minYear == this.initYear 
+					&& this.minMonth == this.initMonth
+					&& this.minDay == this.initDay
+					&& this.minHour == this.initHour					
+				){
+					this.initMinuteArr = data = data.splice(this.minMinute);
+				}
+				if( this.maxYear == this.initYear 
+					&& this.maxMonth == this.initMonth
+					&& this.maxDay == this.initDay
+					&& this.maxHour == this.initHour				
+				){					
+					var maxIndex = 0;
+					data.forEach(function(item, index){
+						if(parseInt(item) == _this.maxMinute){
+							maxIndex = index;
+						}
+					});
+					this.initMinuteArr = data = data.splice(0, maxIndex+1);
+				}
+				break;
+			case 6:
+				this.initSecondArr = data = this.timeBranch[index].bind(this)();
+				if( this.minYear == this.initYear
+					&& this.minMonth == this.initMonth
+					&& this.minDay == this.initDay 
+					&& this.minHour == this.initHour
+					&& this.minMinute == this.initMinute					
+				){
+					this.initSecondArr = data = data.splice(this.minSecond);
+				}
+				if( this.maxYear == this.initYear 
+					&& this.maxMonth == this.initMonth
+					&& this.maxDay == this.initDay
+					&& this.maxHour == this.initHour
+					&& this.maxMinute == this.initMinute					
+				){
+					var maxIndex = 0;
+					data.forEach(function(item, index){
+						if(parseInt(item) == _this.maxSecond){
+							maxIndex = index;
+						}
+					});
+					this.initSecondArr = data = data.splice(0, maxIndex+1);					
+				}
+				break;					
 		}	
 		
 		//获取数据的模板 并转化为dom节点
@@ -175,8 +347,8 @@
 		2: function(){
 			return this.getMonthData();
 		},
-		3: function(year, month, isLimite){
-			return this.getDaysData(year, month, isLimite);
+		3: function(year, month){
+			return this.getDaysData(year, month);
 		},
 		4: function(){
 			return this.getHoursData();
@@ -194,25 +366,26 @@
 	t.getMonthData = function(){
 		return this.MONTH;
 	};
-	t.getDaysData = function(year, month, isLimite){
+	t.getDaysData = function(year, month){
 		
 		var start = 1;
 
-		isLimite && (start = this.minDay);
+		year = parseInt(year);
+		month = parseInt(month);
 
 		switch(month){
-			case '01':
-			case '03':
-			case '05':
-			case '07':
-			case '08':
-			case '10':
-			case '12':
+			case 1:
+			case 3:
+			case 5:
+			case 7:
+			case 8:
+			case 10:
+			case 12:
 				return setTimeValue([], start, 31, '日');
-			case '04':
-			case '06':
-			case '09':
-			case '11':
+			case 4:
+			case 6:
+			case 9:
+			case 11:
 				return setTimeValue([], start, 30, '日');
 			default:
 				return isLeapYear(year) ? setTimeValue([], start, 29, '日') : setTimeValue([], start, 28, '日');
@@ -225,7 +398,7 @@
 		return this.MINUTES;
 	};
 	t.getSecondsData = function(){
-		return this.SECOND;
+		return this.SECONDS;
 	};
 
 	t.getSectionTem = function (data) {
@@ -302,19 +475,7 @@
 		var next = container.nextSibling;	
 		var data;
 
-		switch(this._index){
-			case 1:
-				next = next.nextSibling;
-				nextDom(this._index);
-				break;
-			case 2:
-			case 3:
-			case 4:
-				nextDom(this._index);	
-				break;		
-			default:
-				return false;
-		}
+		nextDom(this._index);
 
 		function nextDom(curIndex){
 
@@ -325,7 +486,7 @@
 				_this.makeArray(dom.querySelectorAll('.scroller-item')).forEach(function(m){
 					if(m.getAttribute('class').indexOf('scroller-selected') > -1){
 
-						var val = m.getAttribute('data-value');
+						var val = parseInt(m.getAttribute('data-value'));
 						switch(index){
 							case 0:
 								year = val;								
@@ -341,7 +502,7 @@
 								break;	
 							case 4:
 								minite = val;
-								break;	
+								break;
 							case 5:
 								second = val;
 								break;								
@@ -349,232 +510,445 @@
 					}
 				});
 			});
+			
+			switch(curIndex){
+				case 1:
 
-			if(_this.minYear){
-				switch(curIndex){
-					case 1:
-						if(parseInt(year) === _this.minYear && parseInt(month) === _this.minMonth &&  parseInt(day) === _this.minDay){
-							if(!_this.isMinHour){
-									data = setTimeValue([], _this.minHour, _this.initMaxHour, '时');
-									updateNextDom(data, next.nextSibling);
-									_this.isMinHour = !0;
-							}
+					if(year == _this.minYear){
+
+						data = setTimeValue([], _this.minMonth, _this.maxMonth || 12, '月');
+						updateNextDom(data, next); //月
+
+						next = next.nextSibling;
+						data = _this.timeBranch[3].bind(_this)(year, month);
+						data.splice(0, _this.minDay - 1);
+						if(_this.maxDay){
+							data.splice(Math.abs(_this.maxDay - _this.minDay) + 1);
 						}
-						else if(parseInt(year) === _this.minYear){
+						updateNextDom(data, next); //天
 
-								if(_this.isMinMonth){
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], _this.minHour, 23, '时');
+						if(_this.maxHour){
+							data.splice(Math.abs(_this.maxHour - _this.minHour) + 1);
+						}
+						updateNextDom(data, next); //时
 
-									if(parseInt(month) === _this.minMonth){
-										data = _this.timeBranch[3].bind(_this)(year, _this.minMonth, !0);
-										if(data.length === 0){return !1;}
-										updateNextDom(data, next);
-										_this.isMinDay = !0;
-										data = setTimeValue([], _this.initMinHour, _this.initMaxHour, '时');
-										if(data.length === 0){return !1;}
-										updateNextDom(data, next.nextSibling);
-										_this.isMinHour = !1;
-									}else{
-										data = _this.timeBranch[3].bind(_this)(year, month, !1);
-										if(data.length === 0){return !1;}
-										updateNextDom(data, next);
-										_this.isMinDay = !1;
-									}
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], _this.minMinute, 59, '分');
+						if(_this.maxMinute){
+							data.splice(Math.abs(_this.maxMinute - _this.minMinute) + 1);
+						}
+						updateNextDom(data, next); //分
 
-								}else{
-									data = setTimeValue([], _this.minMonth, 12, '月');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next.previousSibling);
-									_this.isMinMonth = !0;
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], _this.minSecond, 59, '秒');
+						if(_this.maxSecond){
+							data.splice(Math.abs(_this.maxSecond - _this.minSecond) + 1);
+						}
+						updateNextDom(data, next); //分
 
-									data = _this.timeBranch[3].bind(_this)(year, month, !0);
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next);
-									_this.isMinDay = !0;
+					}
+					else if(year == _this.maxYear){
 
-									data = setTimeValue([], _this.minHour, _this.initMaxHour, '时');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next.nextSibling);
-									_this.isMinHour = !0;
+						data = setTimeValue([], 1, _this.maxMonth, '月');
+						updateNextDom(data, next); //月
 
-									data = setTimeValue([], _this.minMinute, _this.initMaxMinute, '分');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next.nextSibling.nextSibling);
-									_this.isMinMinute = !0;
-								}
+						next = next.nextSibling;
+						if(parseInt(data[0]) == _this.maxMonth){
+							data = _this.timeBranch[3].bind(_this)(year, parseInt(data[0]));
+							data.splice(_this.maxDay)
 						}else{
-								if(_this.isMinMonth){
-									data = setTimeValue([], 1, 12, '月');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next.previousSibling);
-									_this.isMinMonth = !1;
-								}
+							data = _this.timeBranch[3].bind(_this)(year, parseInt(data[0]));
+						}													
+						updateNextDom(data, next);//天
 
-								if(_this.isMinDay){
-									data = _this.timeBranch[3].bind(_this)(year, '01', !1);
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next);
-									_this.isMinDay = !1;
-								}else{
-									data = _this.timeBranch[3].bind(_this)(year, month, !1);
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next);
-								}
-
-								if(_this.isMinHour){
-									data = setTimeValue([], _this.initMinHour, _this.initMaxHour, '时');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next.nextSibling);
-									_this.isMinHour = !1;
-								}
-							
-								if(_this.isMinMinute){
-									data = setTimeValue([], _this.initMinMinute, _this.initMaxMinute, '分');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next.nextSibling.nextSibling);
-									_this.isMinMinute = !1;
-								}
+						next = next.nextSibling;
+						if(!next){
+							return;
 						}
-
-						break;
-					case 2:
-
-						if(parseInt(year) === _this.minYear && parseInt(month) === _this.minMonth &&  parseInt(day) === _this.minDay){
-							
-							if(!_this.isMinHour){
-								data = setTimeValue([], _this.minHour, _this.initMaxHour, '时');
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next.nextSibling);
-								_this.isMinHour = !0;
-							}
-						}else if(parseInt(year) === _this.minYear && parseInt(month) === _this.minMonth){
-							
-							if(!_this.isMinDay){						
-								data = _this.timeBranch[3].bind(_this)(year, month, !0);
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next);
-								_this.isMinDay = !0;
-							}
-
-							if(!_this.isMinHour){
-								data = setTimeValue([], _this.minHour, _this.initMaxHour, '时');
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next.nextSibling);
-								_this.isMinHour = !0;
-							}
-							if(!_this.isMinMinute){
-								data = setTimeValue([], _this.minMinute, _this.initMaxMinute, '分');
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next.nextSibling.nextSibling);
-								_this.isMinMinute = !0;
-							}	
-							
-						}else if(parseInt(year) === _this.minYear){
-														
-							data = _this.timeBranch[3].bind(_this)(year, month, !1);
-							if(data.length === 0){return !1;}
-							updateNextDom(data, next);
-							_this.isMinDay = !1;
-
-							if(_this.isMinHour){
-								data = setTimeValue([], _this.initMinHour, _this.initMaxHour, '时');
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next.nextSibling);
-								_this.isMinHour = !1;	
-							}
-							if(_this.isMinMinute){
-								data = setTimeValue([], _this.initMinMinute, _this.initMaxMinute, '分');
-								if(data.length === 0){return !1;}								
-								updateNextDom(data, next.nextSibling.nextSibling);
-								_this.isMinMinute = !1;
-							}
-													
-
+						if(parseInt(data[0]) == _this.maxDay){
+							data = setTimeValue([], 0, _this.maxHour, '时');
 						}else{
+							data = setTimeValue([], 0, 23, '时');
+						}													
+						updateNextDom(data, next);//时
 
-							if(_this.isMinDay){
-								data = _this.timeBranch[3].bind(_this)(year, month, !1);
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next);	
-								_this.isMinDay = !1;
-							}else{
-								data = _this.timeBranch[3].bind(_this)(year, month, !1);
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next);	
-							}
-							
-							if(_this.isMinHour){
-								data = setTimeValue([], _this.initMinHour, _this.initMaxHour, '时');
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next.nextSibling);
-								_this.isMinHour = !1;
-							}
-							
+						next = next.nextSibling;
+						if(!next){
+							return;
 						}
-						break;
-					case 3:
-						if(parseInt(year) === _this.minYear && parseInt(month) === _this.minMonth &&  parseInt(day) === _this.minDay){
-
-							if(!_this.isMinHour){
-									data = setTimeValue([], _this.minHour, _this.initMaxHour, '时');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next);
-									_this.isMinHour = !0;
-							}
-							if(!_this.isMinMinute){
-								data = setTimeValue([], _this.minMinute, _this.initMaxMinute, '分');
-								if(data.length == 0){return;}
-								updateNextDom(data, next.nextSibling);
-								_this.isMinMinute = !0;
-							}
-
-						}else if(parseInt(year) === _this.minYear && parseInt(month) === _this.minMonth){
-
-							if(parseInt(day) !== _this.minDay){
-								if(_this.isMinHour){
-									data = setTimeValue([], _this.initMinHour, _this.initMaxHour, '时');
-									if(data.length === 0){return !1;}
-									updateNextDom(data, next);
-									_this.isMinHour = !1;
-								}
-								if(_this.isMinMinute){
-									data = setTimeValue([], _this.initMinMinute, _this.initMaxMinute, '分');
-									if(data.length === 0){return !1;}									
-									updateNextDom(data, next.nextSibling);
-									_this.isMinMinute = !1;
-								}								
-							}					
-						}
-						break;
-					case 4:
-						
-						if(parseInt(year) === _this.minYear && parseInt(month) === _this.minMonth &&  parseInt(day) === _this.minDay && parseInt(hour) === _this.minHour){
-							if(!_this.isMinMinute){
-								data = setTimeValue([], _this.minMinute, _this.initMaxMinute, '分');
-								if(data.length === 0){return !1;}
-								updateNextDom(data, next);
-								_this.isMinMinute = !0;
-							}
+						if(parseInt(data[0]) == _this.maxHour){
+							data = setTimeValue([], 0, _this.maxMinute, '分');
 						}else{
-							data = setTimeValue([], _this.initMinMinute, _this.initMaxMinute, '分');
-							if(data.length === 0){return !1;}
-							updateNextDom(data, next);
-							_this.isMinMinute = !1;
+							data = setTimeValue([], 0, 59, '分');
+						}													
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
 						}
-					default:
-						return;
-				}
-			}else{
-				if(curIndex !== 3){
+						if(parseInt(data[0]) == _this.maxMinute){
+							data = setTimeValue([], 0, _this.maxSecond, '秒');
+						}else{
+							data = setTimeValue([], 0, 59, '秒');
+						}													
+						updateNextDom(data, next);//秒
+
+					}
+					else{
+
+						data = setTimeValue([], 1, 12, '月');
+						updateNextDom(data, next);//月
+
+						next = next.nextSibling;
+						data = _this.timeBranch[3].bind(_this)(year, 1);
+						updateNextDom(data, next);//天
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 23, '时');
+						updateNextDom(data, next);//时
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '分');
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '秒');
+						updateNextDom(data, next);//秒
+
+					}
+
+					break;
+				case 2:
+
 					data = _this.timeBranch[3].bind(_this)(year, month);
-					if(data.length === 0){return !1;}
-					updateNextDom(data, next);
-				}
-				return;						
+					
+					if(year == _this.minYear && month == _this.minMonth){										
+						
+						data.splice(0, _this.minDay - 1);
+						if(_this.maxDay){
+							data.splice(Math.abs(_this.maxDay - _this.minDay) + 1);
+						}					
+						updateNextDom(data, next); //天
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.minDay){
+							data = setTimeValue([], _this.minHour, 23, '时');
+						}else{
+							data = setTimeValue([], 0, 23, '时');
+						}
+						if(_this.maxHour){
+							data.splice(Math.abs(_this.maxHour - _this.minHour) + 1);
+						}
+						updateNextDom(data, next);//时
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.minHour){
+							data = setTimeValue([], _this.minMinute, 59, '分');
+						}else{
+							data = setTimeValue([], 0, 59, '分');
+						}
+						if(_this.maxMinute){
+							data.splice(Math.abs(_this.maxMinute - _this.minMinute) + 1);
+						}
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.minMinute){
+							data = setTimeValue([], _this.minSecond, 59, '秒');
+						}else{
+							data = setTimeValue([], 0, 59, '秒');
+						}
+						if(_this.maxSecond){
+							data.splice(Math.abs(_this.maxSecond - _this.minSecond) + 1);
+						}
+						updateNextDom(data, next);//秒
+
+					}
+					else if(year == _this.maxYear && month == _this.maxMonth){
+
+						
+						data.splice(_this.maxDay);						
+						updateNextDom(data, next);//天
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.maxDay){
+							data = setTimeValue([], 0, _this.maxHour, '时');
+						}else{
+							data = setTimeValue([], 0, 23, '时');
+						}
+						updateNextDom(data, next);//时
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.maxHour){
+							data = setTimeValue([], 0, _this.maxMinute, '分');
+						}else{
+							data = setTimeValue([], 0, 59, '分');
+						}
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.maxMinute){
+							data = setTimeValue([], 0, _this.maxSecond, '秒');
+						}else{
+							data = setTimeValue([], 0, 59, '秒');
+						}
+						updateNextDom(data, next);//秒
+
+					}
+					else{
+						
+						updateNextDom(data, next);//天
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 23, '时');
+						updateNextDom(data, next);//时
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '分');
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '秒');
+						updateNextDom(data, next);//秒
+					}			
+
+					break;
+				case 3:
+
+					if(year == _this.minYear && month == _this.minMonth && day == _this.minDay){
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], _this.minHour, 23, '时');
+						if(_this.maxHour){
+							data.splice(Math.abs(_this.maxHour - _this.minHour) + 1);
+						}
+						updateNextDom(data, next); //时
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.minHour){
+							data = setTimeValue([], _this.minMinute, 59, '分');
+						}else{
+							data = setTimeValue([], 0, 59, '分');
+						}			
+						if(_this.maxMinute){
+							data.splice(Math.abs(_this.maxMinute - _this.minMinute) + 1);
+						}										
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.minMinute){
+							data = setTimeValue([], _this.minSecond, 59, '秒');
+						}else{
+							data = setTimeValue([], 0, 59, '秒');
+						}
+						if(_this.maxSecond){
+							data.splice(Math.abs(_this.maxSecond - _this.minSecond) + 1);
+						}													
+						updateNextDom(data, next);//秒
+
+					}
+					else if(year == _this.maxYear && month == _this.maxMonth && day == _this.maxDay){
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 1, _this.maxHour, '时');
+						updateNextDom(data, next); //时
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.maxHour){
+							data = setTimeValue([], 0, _this.maxMinute, '分');
+						}else{
+							data = setTimeValue([], 0, 59, '分');
+						}													
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.maxMinute){
+							data = setTimeValue([], 0, _this.maxSecond, '秒');
+						}else{
+							data = setTimeValue([], 0, 59, '秒');
+						}													
+						updateNextDom(data, next);//秒
+					}
+					else{
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 23, '时');
+						updateNextDom(data, next);//时
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '分');
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '秒');
+						updateNextDom(data, next);//秒
+					}
+					break;
+				case 4:
+					if(year == _this.minYear && month == _this.minMonth && day == _this.minDay && hour == _this.minHour){
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], _this.minMinute, 59, '分');
+						if(_this.maxMinute){
+							data.splice(Math.abs(_this.maxMinute - _this.minMinute) + 1);
+						}	
+						updateNextDom(data, next); //分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], _this.minSecond, 59, '秒');
+						if(_this.maxSecond){
+							data.splice(Math.abs(_this.maxSecond - _this.minSecond) + 1);
+						}
+						updateNextDom(data, next); //分
+					}
+					else if(year == _this.maxYear && month == _this.maxMonth && day == _this.maxDay && hour == _this.maxHour){
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, _this.maxMinute, '分');
+						updateNextDom(data, next); //分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						if(parseInt(data[0]) == _this.maxMinute){
+							data = setTimeValue([], 0, _this.maxSecond, '秒');
+						}else{
+							data = setTimeValue([], 0, 59, '秒');
+						}													
+						updateNextDom(data, next);//秒
+					}
+					else{
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '分');
+						updateNextDom(data, next);//分
+
+						next = next.nextSibling;
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '秒');
+						updateNextDom(data, next);//秒
+					}	
+					break;
+				case 5:
+					if(year == _this.minYear && month == _this.minMonth && day == _this.minDay && hour == _this.minHour && minite == _this.minMinute){
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], _this.minSecond, 59, '秒');
+						if(_this.maxSecond){
+							data.splice(Math.abs(_this.maxSecond - _this.minSecond) + 1);
+						}
+						updateNextDom(data, next); //秒
+
+					}
+					else if(year == _this.maxYear && month == _this.maxMonth && day == _this.maxDay && hour == _this.maxHour && minite == _this.maxMinute){
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, _this.maxSecond, '秒');
+						updateNextDom(data, next); //秒
+
+					}
+					else{
+
+						if(!next){
+							return;
+						}
+						data = setTimeValue([], 0, 59, '秒');
+						updateNextDom(data, next);//秒
+					}
+					break;		
 			}
+
 		}
 
 		function updateNextDom(dataArr, nextEle){
-
 			var str = '';
 			dataArr.forEach(function(value){
 				str += "<div class='scroller-item' data-value='"+ _this.delTimeText(value) +"'>"+ value +"</div>";
@@ -615,7 +989,7 @@
 			var _dom = dom;
 			_this.makeArray(dom.querySelectorAll('.scroller-item')).forEach(function(d, i){
 			
-				if(d.getAttribute('data-value') === cur){
+				if( parseInt(d.getAttribute('data-value')) === parseInt(cur)){
 					_this.setSelected(_dom, i);
 					_this.srollTo(_dom.parentNode, -_this.__itemHeight * i + parseInt(_this.INIT_TOP));
 				}
@@ -623,73 +997,37 @@
 			});
 		});
 	};
-	t.startTimeLimite = function(){
+	t.controlLimite = function(type){
 
 		var _this = this;
-		var dateStr = _this.defaults.startTimeLimite.match(/\d+/g);
-		var initTime;
 
-		if(_this.defaults.initTime){
-			initTime =   _this.defaults.initTime.match(/\d+/g);
+		switch(type){
+			case 'start':
+				dateArr = _this.defaults.startTimeLimite.match(/\d+/g);
+				_this.minYear = dateArr[0];
+				_this.minMonth = dateArr[1];
+				_this.minDay = dateArr[2];
+				_this.minHour = dateArr[3];
+				_this.minMinute = dateArr[4];				
+			break;
+			case 'end':
+				dateArr = _this.defaults.endTimeLimite.match(/\d+/g);
+				_this.maxYear = dateArr[0];
+				_this.maxMonth = dateArr[1];
+				_this.maxDay = dateArr[2];
+				_this.maxHour = dateArr[3];
+				_this.maxMinute = dateArr[4];
+			break;
 		}
 
-		dateStr.forEach(function(date, index){
+		_this.YAER = setTimeValue([], _this.minYear, _this.maxYear, '年');
+		_this.MONTH = setTimeValue([], _this.minMonth, _this.maxMonth, '月');
+		_this.DAY = setTimeValue([], _this.minDay, _this.maxDay, '日');
+		_this.HOURS = setTimeValue([], _this.minHour, _this.maxHour, '时');
+		_this.MINUTES = setTimeValue([], _this.minMinute, _this.maxMinute, '分');
 
-			switch(index){
-				case 0:
-					_this.minYear = parseInt(date);
-					_this.isMinYear = !0;
-					_this.YAER = setTimeValue([], _this.minYear, _this.minYear + 5, '年');								
-					break;
-				case 1:
-					_this.minMonth = parseInt(date);
-					
-					if(initTime && parseInt(initTime[0]) === _this.minYear && parseInt(initTime[1]) === _this.minMonth){
-						_this.MONTH = setTimeValue([], _this.minMonth, 12, '月');
-						_this.isMinMonth = !0;
-					}else{
-						_this.MONTH = setTimeValue([], 1, 12, '月');
-						_this.isMinMonth = !1;
-					}
-					break;
-				case 2:
-					_this.minDay = parseInt(date);
-					if(initTime && _this.isMinMonth && parseInt(initTime[2]) === _this.minDay ){
-						_this.isMinDay = !0;					
-					}else{
-						_this.isMinDay = !1;
-					}				
-					break;
-				case 3:
-					// 8
-					_this.minHour = parseInt(date) ;
-					//console.log(_this.minHour)
-					if(initTime && _this.isMinDay && parseInt(initTime[3]) >= _this.minHour ){						
-						_this.HOURS = setTimeValue([], _this.minHour, _this.initMaxHour, '时');
-						_this.isMinHour = !0;
-					}else{
-						_this.HOURS = setTimeValue([], _this.initMinHour, _this.initMaxHour, '时');
-						_this.isMinHour = !1;
-					}
-					break;
-				case 4:
-					_this.minMinute = parseInt(date);
-					if(initTime && _this.isMinHour && parseInt(initTime[4]) >= _this.minMinute){
-						_this.MINUTES = setTimeValue([], _this.minMinute, _this.initMaxMinute, '分');
-						_this.isMinMinute = !0;
-					}else{
-						_this.MINUTES = setTimeValue([], _this.initMinMinute, _this.initMaxMinute, '分');
-						_this.isMinMinute = !1;
-					}							
-					break;
-				case 5:
-					_this.minSecond = parseInt(date);
-					_this.isMinSecond = !0;
-					_this.SECOND = setTimeValue([], _this.minSecond, 59, '秒');
-					break;
-			}
-		});
-	},
+	};
+
 	t.initEvent = function(){
 		var _this = this;
 		var mask = $Id('vux-popup-mask');
