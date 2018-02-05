@@ -351,10 +351,7 @@
 
 			var isOver = {
 				flag: 0,
-				o:{
-					name: '',
-					strokeStyle: ''
-				}
+				o:{}
 			};
 			point = getCanvasPoint(e.pageX, e.pageY);
 
