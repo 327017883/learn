@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+	<title></title>
+</head>
+<body>
+<header>头部信息</header>
+
+<div class='refresh-container'>	
+	<div class="refresh-scroll">
+		<ul>
+			<li>div01</li>
+			<li>div02</li>
+			<li>div03</li>
+			<li>div04</li>
+			<li>div05</li>
+			<li>div06</li>
+			<li>div07</li>
+			<li>div08</li>
+			<li>div09</li>
+			<li>div10</li>
+			<li>div11</li>
+			<li>div12</li>
+			<li>div13</li>
+			<li>div14</li>
+			<li>div15</li>
+		</ul>
+	</div>
+</div>
+<script type="text/javascript" src='./js/refresh.js'></script>
+<script type="text/javascript">
+
+var count = 1;
+
+function loadData(){
+	var html = '';
+	for(var i = 0; i < 5; i++){
+		html += "<li>demo"+ count++ +"</li>";
+	}
+	return html;	
+}
+
+function htmlToDom(html){
+	var div = document.createElement('div');
+	div.innerHTML = html;
+	return div.childNodes;
+
+};
+
+lib.Refresh('.refresh-container',{
+	direction: 'down',
+	pullDown: function(){
+
+		var html = loadData();
+		var ul = document.querySelector('.refresh-container ul');
+		var refreshDown = document.querySelector('.refresh-down');
+		
+		var child = htmlToDom(html);
+		setTimeout(function(){
+			for(var i = 0, len = child.length; i < len; i++){
+				ul.appendChild(child[0]);
+			}
+
+			//请求成功，但无数据
+			if(count > 10){
+				refreshDown.setAttribute('class', 'refresh-down');
+			}							
+		}, 1000);		
+	}
+});
+
+
+</script>
+</body>
+</html>
